@@ -19,7 +19,7 @@ class UserController extends Controller
         //  echo $User['id'] . ',' . $User['Name'] . "\n" ;
         //}
         return response()->json($Users);
-    
+
     }
 
     public function CheckUser($id)
@@ -31,5 +31,5 @@ class UserController extends Controller
             return response()->json(['Message'=>'Your id is Valid']);
         }
     }
-    
+
 }

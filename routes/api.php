@@ -11,7 +11,6 @@ Route::get('/user', function (Request $request) {
 
 
 Route::get('/Welcome', [Welcomecontroller::class, 'Welcome']);
+
 Route::get('/User', [UserController::class, 'index']);
-
-
 Route::get('User/{id}', [UserController::class, 'CheckUser']);

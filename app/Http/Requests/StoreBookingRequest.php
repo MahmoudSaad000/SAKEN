@@ -22,7 +22,6 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
             'payment_method' => 'required|in:credit,bank_transfer,cash,digital_wallet',
             'check_in_date' => 'required|date|after:today',
             'check_out_date' => 'required|date|after:check_in_date',

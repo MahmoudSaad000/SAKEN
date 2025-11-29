@@ -16,7 +16,7 @@ class IsOwner
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'Owner')
+        if (Auth::user()->role === 'Apartment_Owner')
             return $next($request);
         
         return response()->json([

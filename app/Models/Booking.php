@@ -18,4 +18,10 @@ class Bookings extends Model
         'appartment_id',
         'user_id'
     ];
+
+    protected $table = 'bookings';
+
+    public function renter(){
+        $this->belongsTo(User::class);
+    }
 }

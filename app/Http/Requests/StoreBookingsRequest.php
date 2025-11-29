@@ -11,7 +11,7 @@ class StoreBookingsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,6 +23,10 @@ class StoreBookingsRequest extends FormRequest
     {
         return [
             //
+            'payment_method' => 'required|in:credit,bank_transfer,cash,digital_wallet',
+            'check_in_date' => 'required|date|after:today',
+            'check_out_date' => 'required|date|after:check_in_date',
+            'appartment_id' => 'required|integer'
         ];
     }
 }

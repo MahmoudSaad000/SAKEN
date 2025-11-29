@@ -22,7 +22,9 @@ class UpdateBookingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'payment_method' => 'sometimes|required|in:credit,bank_transfer,cash,digital_wallet',
+            'check_in_date' => 'sometimes|required|date|after:today',
+            'check_out_date' => 'sometimes|required|date|after:check_in_date',
         ];
     }
 }

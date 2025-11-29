@@ -26,11 +26,11 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ];
 
+
         if ($request->hasFile('Picture')) {
             $picturePath = $request->file('Picture')->store('profile_pictures', 'public');
             $userData['Picture'] = $picturePath;
         }
-
 
         if ($request->hasFile('Id_Card_Image')) {
             $idCardPath = $request->file('Id_Card_Image')->store('id_cards', 'public');
@@ -44,6 +44,7 @@ class UserController extends Controller
             'User' => $user
         ], 201);
     }
+
 
     public function login(Request $request)
     {
@@ -75,4 +76,5 @@ class UserController extends Controller
             'message' => 'Logout Successfuly. '
         ]);
     }
+
 }

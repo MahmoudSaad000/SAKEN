@@ -10,14 +10,14 @@ use Illuminate\Support\Facades\Auth;
 
 class BookingService
 {
-    protected $appartmentService;
+    protected $apartmentService;
 
     const STATUS_COMPLETED = 'completed';
     const STATUS_CANCELLED = 'cancelled';
 
-    public function __construct(AppartmentService $appartmentService)
+    public function __construct(ApartmentService $apartmentService)
     {
-        $this->appartmentService = $appartmentService;
+        $this->apartmentService = $apartmentService;
     }
 
     public function findBooking($booking_id)
@@ -79,7 +79,7 @@ class BookingService
 
     public function isThereDateConflict($data)
     {
-        $appartment = $this->appartmentService->findAppartment($data['appartment_id']);
+        $appartment = $this->appartmentService->findApartment($data['appartment_id']);
         $appartment_bookings = $appartment->bookings();
 
         foreach ($appartment_bookings as $appartment_booking) {

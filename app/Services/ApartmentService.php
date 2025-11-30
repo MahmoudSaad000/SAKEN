@@ -6,7 +6,7 @@ use App\Models\Apartment;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class AppartmentService
+class ApartmentService
 {
     /**
      * Create a new class instance.
@@ -15,14 +15,14 @@ class AppartmentService
     {
         //
     }
-    public function findAppartment($appartment_id)
+    public function findApartment($apartment_id)
     {
 
         try {
-            return Apartment::findOrFail($appartment_id);
+            return Apartment::findOrFail($apartment_id);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'error' => "Appartment Not Found",
+                'error' => "Apartment Not Found",
                 'details' => $e->getMessage()
             ], 404);
         } catch (Exception $e) {

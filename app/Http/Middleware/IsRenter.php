@@ -16,7 +16,7 @@ class IsRenter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'Renter')
+        if (Auth::user()->role === 'renter')
             return $next($request);
         
         return response()->json([

@@ -52,7 +52,7 @@ class UserController extends Controller
             'phone_number' => 'required|digits:10|exists:users,phone_number',
             'password' => 'required'
         ]);
-        if (!Auth::attempt($request->only('phone_Number', 'password')))
+        if (!Auth::attempt($request->only('phone_number', 'password')))
             return response()->json(
                 [
                     'message' => 'Envalid Phone_Number Or Password. ',
@@ -60,7 +60,7 @@ class UserController extends Controller
                 401
             );
 
-        if ($user = User::where('phone_Number', $request->phone_Number)->where('is_approved', 'true')->first()) {
+        if ($user = User::where('phone_number', $request->phone_number)->where('is_approved', '1')->first()) {
             $token = $user->createToken('auth_Token')->plainTextToken;
             return response()->json([
                 'message' => 'Login Successfuly. ',

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\BookingService;
 use App\Http\Requests\RateBookingRequest;
-use App\Models\Bookings;
+use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
@@ -45,14 +45,14 @@ class BookingController extends Controller
 
         $validated['user_id'] = Auth::user()->id;
 
-        // if($this->isThereDateConflict($validated)){
-        //     return response()->json([  'error' => "Date Conflict",
-        //                                'message' => "The date you selected for booking is not available because it conflicts with an existing reservation. Please choose another date."
-        // ]);
-        // }
+        if($this->bookingService->isThereDateConflict($validated)){
+            return response()->json([  'error' => "Date Conflict",
+                                       'message' => "The date you selected for booking is not available because it conflicts with an existing reservation. Please choose another date."
+        ]);
+        }
 
         try {
-            $booking = Bookings::create($validated);
+            $booking = Booking::create($validated);
         } catch (Exception $e) {
             return response()->json([
                 'error' => "Something Went Wrong",

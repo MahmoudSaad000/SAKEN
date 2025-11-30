@@ -3,7 +3,7 @@
 namespace App;
 
 use App\Http\Resources\BookingResource;
-use App\Models\Bookings;
+use App\Models\Booking;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +23,7 @@ class BookingService
     public function findBooking($booking_id)
     {
         try {
-            return Bookings::findOrFail($booking_id);
+            return Booking::findOrFail($booking_id);
         } catch (ModelNotFoundException $e) {
             throw new Exception("Booking Not Found", 404);
         } catch (Exception $e) {
@@ -79,19 +79,19 @@ class BookingService
 
     public function isThereDateConflict($data)
     {
-        $appartment = $this->appartmentService->findAppartment($data->appartment_id);
-        // $appartment_bookings = $appartment->bookings;
+        $appartment = $this->appartmentService->findAppartment($data['appartment_id']);
+        $appartment_bookings = $appartment->bookings();
 
-        // foreach ($appartment_bookings as $appartment_booking) {
-        //     if ($this->datesConflict(
-        //         $data->check_in_date,
-        //         $data->check_out_date,
-        //         $appartment_booking->check_in_date,
-        //         $appartment_booking->check_out_date
-        //     )) {
-        //         return true;
-        //     }
-        // }
+        foreach ($appartment_bookings as $appartment_booking) {
+            if ($this->datesConflict(
+                $data->check_in_date,
+                $data->check_out_date,
+                $appartment_booking->check_in_date,
+                $appartment_booking->check_out_date
+            )) {
+                return true;
+            }
+        }
 
         return false;
     }

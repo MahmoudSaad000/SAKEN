@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\BookingService;
+use App\Http\Requests\RateBookingRequest;
 use App\Models\Bookings;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -34,7 +36,7 @@ class BookingController extends Controller
     {
         $validated = $request->validated();
 
-        $extra = $this->getExtraAttributes($request,$validated);
+        $extra = $this->bookingService->getExtraAttributes($request, $validated);
         if ($extra->isNotEmpty()) {
             return response()->json([
                 'error' => "Extra attributes: " . $extra->implode(', ')
@@ -64,8 +66,15 @@ class BookingController extends Controller
 
     public function show($booking_id)
     {
-        $booking = null;
-        // if(Auth::user()->id != )
+        try {
+            $booking = $this->bookingService->findBooking($booking_id);
+            if ($this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
+                return response()->json(['error' => "Unauthorized"]);
+            }
+            return response()->json($booking);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
     }
 
 
@@ -73,111 +82,53 @@ class BookingController extends Controller
     {
         //
         $validated_data = $request->validated();
-        $validated_data['role'] = 'modified';
-        return $this->updateBooking($request, $validated_data, $booking_id);
+        $validated_data['booking_status'] = 'modified';
+        try {
+            return $this->bookingService->updateBooking($request, $validated_data, $booking_id);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
     }
 
 
-    public function destroy(Bookings $bookings)
+    public function destroy($booking_id)
     {
-        //
+        try {
+            $booking = $this->bookingService->findBooking($booking_id);
+
+            if (!$this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
+                return response()->json(['error' => "Unauthorized"]);
+            }
+
+            if ($this->bookingService->isBookingCompleted($booking_id)) {
+                return response()->json(['error' => "The Booking is already completed"]);
+            }
+
+            if ($this->bookingService->isBookingCancelled($booking_id)) {
+                return response()->json(['error' => "The Booking is already cancelled"]);
+            }
+
+            $validated['booking_status'] = 'cancelled';
+            $request['booking_status'] = 'cancelled';
+
+            $this->bookingService->updateBooking($request,$validated,$booking_id);
+            return response()->json(['message' => 'Booking Cancelled Successfully.']);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
     }
 
 
 
-    public function rateBooking(HttpRequest $request, $booking_id)
+    public function rateBooking(RateBookingRequest $request, $booking_id)
     {
-        $validator = Validator::make($request->all(), ['rate' => "required|integer|min:1|max:10"]);
-
-
-        if (!$this->isBookingCompleated($booking_id))
+        if (!$this->bookingService->isBookingCompleted($booking_id))
             return response()->json(['error' => 'You cannot rate Uncompleated Booking'], 403);
-
-        $this->updateBooking($request, $validator->validated(), $booking_id);
-
-        return response()->json('Rated Successfully');
-    }
-
-    // Hellper functions
-
-    private function findBooking($booking_id)
-    {
-        $booking = null;
-        try {
-            $booking = Bookings::findOrFail($booking_id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => "Booking Not Found",
-                'details' => $e->getMessage()
-            ], 404);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => "Something Went Wrong",
-                'details' => $e->getMessage()
-            ], 404);
+        try{
+            $this->bookingService->updateBooking($request, $request->validated(), $booking_id);
+            return response()->json('Rated Successfully');
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()]);
         }
-
-        return $booking;
-    }
-
-    private function updateBooking($request, $validated, $booking_id)
-    {
-        $user = Auth::user();
-        $booking = $this->findBooking($booking_id);
-
-        $extra = $this->getExtraAttributes($request, $validated);
-        if ($extra->isNotEmpty()) {
-            return response()->json([
-                'error' => "Extra attributes: " . $extra->implode(', ')
-            ], 422);
-        }
-
-        if ($booking->user_id != $user->id) {
-            return response()->json(['message' => "Unauthorized"], 403);
-        }
-
-
-        $booking->update($validated);
-        return new BookingResource($booking);
-    }
-
-    private function getExtraAttributes($request, $validated_data)
-    {
-        return collect(array_keys($request->all()))->diff(array_keys($validated_data));
-    }
-    
-    private function isBookingCompleated($booking_id){
-        return ($this->findBooking($booking_id)->booking_status === 'completed');
-    }
-
-    private function datesConflict($startA, $endA, $startB, $endB)
-    {
-        return ($startA <= $endB) && ($endA >= $startB);
-    }
-
-    private function findAppartment($appartment_id) {
-        try {
-            // return Appartment::findOrFail($appartment_id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => "Appartment Not Found",
-                'details' => $e->getMessage()
-            ], 404);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => "Something Went Wrong",
-                'details' => $e->getMessage()
-            ], 404);
-        }
-    }
-
-    private function isThereDateConflict($data){
-        // $appartment = $this->findAppartment($data->appartment_id);
-        // $appartment_bookings = $appartment->bookings;
-        // foreach ($appartment_bookings as $appartment_booking) {
-        //     if($this->datesConflict($data->check_in_date,$data->check_out_date,$appartment_booking->check_in_date,$appartment_booking->check_out_date))
-        //         return true;
-        // }
-        // return false;
     }
 }

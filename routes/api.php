@@ -18,6 +18,8 @@ Route::post('register', [UserController::class, 'register']);
 Route::post('login',[UserController::class,'login']);
 Route::post('logout',[UserController::class,'logout'])->middleware('auth:sanctum');
 
+
+
 Route::middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/bookings')->group(function(){
@@ -43,7 +45,7 @@ Route::prefix('/bookings')->group(function(){
     });
 
 });
-
+Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
 });
 
 

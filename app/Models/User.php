@@ -20,7 +20,7 @@ class User extends Authenticatable
      */
     protected $guarded = [
         'id',
-        'Is_Approved'
+        'is_approved'
     ];
 
 

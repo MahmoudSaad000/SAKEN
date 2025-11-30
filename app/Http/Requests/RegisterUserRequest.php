@@ -22,14 +22,14 @@ class RegisterUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'First_Name' => 'required|string|max:255',
-            'Last_Name' => 'required|string|max:255',
-            'Phone_Number' => 'required|digits:10|unique:users,Phone_Number',
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'phone_number' => 'required|digits:10|unique:users,Phone_Number',
             'password' => 'required|string|min:8|confirmed',
-            'Date_Of_Birth' => 'required|date|max:10',
-            'Picture' => 'required|image|mimes:png,jpg,jpeg,gif|max:2048',
-            'Id_Card_Image' => 'required|image|mimes:png,jpg,jpeg,gif|max:2048',
-            'Role' => 'required|in:Admin,Apartment_Owner,Renter',
+            'date_of_birth' => 'required|date|max:10',
+            'picture' => 'required|image|mimes:png,jpg,jpeg,gif|max:2048',
+            'id_card_image' => 'required|image|mimes:png,jpg,jpeg,gif|max:2048',
+            'role' => 'required|in:admin,apartment_owner,renter',
         ];
     }
 }

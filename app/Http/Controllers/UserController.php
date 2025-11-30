@@ -18,23 +18,23 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $userData = [
-            'First_Name' => $validated['First_Name'],
-            'Last_Name' => $validated['Last_Name'],
-            'Phone_Number' => $validated['Phone_Number'],
-            'Date_Of_Birth' => $validated['Date_Of_Birth'],
-            'Role' => $validated['Role'],
+            'firstname' => $validated['firstname'],
+            'lastname' => $validated['lastname'],
+            'phone_number' => $validated['phone_number'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'role' => $validated['role'],
             'password' => Hash::make($validated['password']),
         ];
 
 
-        if ($request->hasFile('Picture')) {
-            $picturePath = $request->file('Picture')->store('profile_pictures', 'public');
-            $userData['Picture'] = $picturePath;
+        if ($request->hasFile('picture')) {
+            $picturePath = $request->file('picture')->store('profile_pictures', 'public');
+            $userData['picture'] = $picturePath;
         }
 
-        if ($request->hasFile('Id_Card_Image')) {
-            $idCardPath = $request->file('Id_Card_Image')->store('id_cards', 'public');
-            $userData['Id_Card_Image'] = $idCardPath;
+        if ($request->hasFile('id_card_image')) {
+            $idCardPath = $request->file('id_card_image')->store('id_cards', 'public');
+            $userData['id_card_image'] = $idCardPath;
         }
 
         $user = User::create($userData);
@@ -49,23 +49,29 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'Phone_Number' => 'required|digits:10|exists:users,Phone_Number',
+            'phone_number' => 'required|digits:10|exists:users,phone_number',
             'password' => 'required'
         ]);
-        if (!Auth::attempt($request->only('Phone_Number', 'password')))
+        if (!Auth::attempt($request->only('phone_Number', 'password')))
             return response()->json(
                 [
                     'message' => 'Envalid Phone_Number Or Password. ',
                 ],
                 401
             );
-        $user = User::where('Phone_Number', $request->Phone_Number)->first();
-        $token = $user->createToken('auth_Token')->plainTextToken;
-        return response()->json([
-            'message' => 'Login Successfuly. ',
-            'User'    => $user,
-            'Token'   => $token
-        ], 201);
+
+        if ($user = User::where('phone_Number', $request->phone_Number)->where('is_approved', 'true')->first()) {
+            $token = $user->createToken('auth_Token')->plainTextToken;
+            return response()->json([
+                'message' => 'Login Successfuly. ',
+                'User'    => $user,
+                'Token'   => $token
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'Account not approved. ',
+            ], 403);
+        }
     }
 
 
@@ -77,4 +83,14 @@ class UserController extends Controller
         ]);
     }
 
+    public function getAllUsers()
+    {
+        $users = User::all();
+
+        return response()->json([
+            'message' => 'All users retrieved successfully.',
+            'users' => $users,
+            'count' => $users->count()
+        ], 200);
+    }
 }

@@ -1,7 +1,12 @@
 <?php
 
+<<<<<<< HEAD
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingsController;
+=======
+use App\Http\Controllers\ApartmentController;
+use App\Http\Controllers\BookingController;
+>>>>>>> 25236cf9916277f8df219afa50c7e27a8fd6b0dd
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Welcomecontroller;
 use Illuminate\Http\Request;
@@ -47,7 +52,15 @@ Route::prefix('/bookings')->group(function(){
 
 });
 Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
+
+Route::prefix('/apartment')->group(function(){
+
+        Route::apiResource('',ApartmentController::class);
+       
+    });
+
 });
+
 
 
 

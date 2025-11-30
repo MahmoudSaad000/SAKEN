@@ -24,4 +24,9 @@ class Bookings extends Model
     public function renter(){
         $this->belongsTo(User::class);
     }
+
+     public function apartment()
+    {
+        return $this->belongsTo(Apartment::class);
+    }
 }

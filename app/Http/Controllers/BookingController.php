@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\BookingService;
 use App\Models\Bookings;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
@@ -14,6 +15,14 @@ use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
+
+    protected $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
 
     public function index()
     {
@@ -167,8 +176,8 @@ class BookingController extends Controller
         // $appartment_bookings = $appartment->bookings;
         // foreach ($appartment_bookings as $appartment_booking) {
         //     if($this->datesConflict($data->check_in_date,$data->check_out_date,$appartment_booking->check_in_date,$appartment_booking->check_out_date))
-        //         return false;
+        //         return true;
         // }
-        // return true;
+        // return false;
     }
 }

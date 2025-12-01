@@ -12,20 +12,28 @@ class Booking extends Model
 
     protected $fillable = [
         'rate',
+        'booking_status',
         'payment_method',
         'check_in_date',
         'check_out_date',
-        'appartment_id',
+        'apartment_id',
         'user_id'
     ];
 
     protected $table = 'bookings';
 
-    public function renter(){
-        $this->belongsTo(User::class);
+    protected $casts = [
+        'check_in_date' => 'datetime',
+        'check_out_date' => 'datetime',
+    ];
+
+
+    public function renter()
+    {
+       return $this->belongsTo(User::class);
     }
 
-     public function apartment()
+    public function apartment()
     {
         return $this->belongsTo(Apartment::class);
     }

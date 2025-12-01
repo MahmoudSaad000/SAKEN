@@ -25,7 +25,7 @@ class StoreBookingRequest extends FormRequest
             'payment_method' => 'required|in:credit,bank_transfer,cash,digital_wallet',
             'check_in_date' => 'required|date|after:today',
             'check_out_date' => 'required|date|after:check_in_date',
-            'appartment_id' => 'required|integer|exists:apartments,id'
+            'apartment_id' => 'required|integer|exists:apartments,id'
         ];
     }
 }

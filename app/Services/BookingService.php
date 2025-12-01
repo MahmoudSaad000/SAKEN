@@ -1,12 +1,14 @@
 <?php
 
-namespace App;
+namespace App\Services;
 
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BookingService
 {
@@ -25,7 +27,7 @@ class BookingService
         try {
             return Booking::findOrFail($booking_id);
         } catch (ModelNotFoundException $e) {
-            throw new Exception("Booking Not Found", 404);
+            throw new NotFoundHttpException("Booking Not Found", $e);
         } catch (Exception $e) {
             throw new Exception("Something Went Wrong", 500);
         }
@@ -42,11 +44,11 @@ class BookingService
 
         $extra = $this->getExtraAttributes($request, $validated);
         if ($extra->isNotEmpty()) {
-            throw new Exception("Extra attributes: " . $extra->implode(', '), 422);
+            throw new HttpException(422, "Extra attributes: " . $extra->implode(', '));
         }
 
-        if (!$this->doesBookingBelongToUser(Auth::user(),$booking)) {
-            throw new Exception("Unauthorized", 403);
+        if (!$this->doesBookingBelongToUser(Auth::user(), $booking)) {
+            throw new Exception(403, "Unauthorized");
         }
 
         $booking->update($validated);
@@ -57,6 +59,9 @@ class BookingService
 
     public function getExtraAttributes($request, $validated_data)
     {
+        if (is_null($request)) {
+            return collect([]);
+        }
         return collect(array_keys($request->all()))->diff(array_keys($validated_data));
     }
 
@@ -72,27 +77,12 @@ class BookingService
         return $booking->booking_status === self::STATUS_CANCELLED;
     }
 
-    public function datesConflict($startA, $endA, $startB, $endB)
-    {
-        return ($startA <= $endB) && ($endA >= $startB);
-    }
-
     public function isThereDateConflict($data)
     {
-        $appartment = $this->appartmentService->findApartment($data['appartment_id']);
-        $appartment_bookings = $appartment->bookings();
-
-        foreach ($appartment_bookings as $appartment_booking) {
-            if ($this->datesConflict(
-                $data->check_in_date,
-                $data->check_out_date,
-                $appartment_booking->check_in_date,
-                $appartment_booking->check_out_date
-            )) {
-                return true;
-            }
-        }
-
-        return false;
+        $apartment = $this->apartmentService->findApartment($data['apartment_id']);
+        return $apartment->bookings()
+            ->where('check_in_date', '<=', $data['check_out_date'])
+            ->where('check_out_date', '>=', $data['check_in_date'])
+            ->exists();
     }
 }

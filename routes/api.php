@@ -25,24 +25,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
 
 
-    Route::prefix('/bookings')->group(function () {
+    Route::middleware('isRenter')->group(function () {
+        Route::apiResource('bookings', BookingController::class);
+        Route::put('bookings/{booking}/rate', [BookingController::class, 'rateBooking']);
+    });
 
-        Route::middleware('isRenter')->group(function () {
+    Route::middleware('isAdmin')->group(function () {
+        Route::get('bookings/all', [BookingController::class, 'getAllBookings']);
+    });
 
-            Route::apiResource('', BookingController::class);
-            Route::put('/{booking_id}/rate', [BookingController::class, 'rateBooking'])->middleware('isRenter');
-        });
-
-        Route::middleware('isAdmin')->group(function () {
-
-            Route::get('/all', [BookingController::class, 'getAllBookings'])->middleware('isAdmin');
-        });
-
-        Route::middleware('isOwner')->group(function () {
-
-            Route::get('/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
-            Route::put('/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
-        });
+    Route::middleware('isOwner')->group(function () {
+        Route::get('bookings/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
+        Route::put('bookings/{booking}/confirm', [BookingController::class, 'confirmBooking']);
     });
 
 

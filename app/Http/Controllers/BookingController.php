@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\BookingService;
+
 use App\Http\Requests\RateBookingRequest;
 use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
+use App\Services\BookingService;
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Client\Request;
-use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class BookingController extends Controller
 {
@@ -45,10 +43,18 @@ class BookingController extends Controller
 
         $validated['user_id'] = Auth::user()->id;
 
-        if($this->bookingService->isThereDateConflict($validated)){
-            return response()->json([  'error' => "Date Conflict",
-                                       'message' => "The date you selected for booking is not available because it conflicts with an existing reservation. Please choose another date."
-        ]);
+        try {
+
+            if ($this->bookingService->isThereDateConflict($validated)) {
+                return response()->json([
+                    'error' => "Date Conflict",
+                    'message' => "The date you selected for booking is not available because it conflicts with an existing reservation. Please choose another date."
+                ], 422);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], $e);
         }
 
         try {
@@ -68,19 +74,24 @@ class BookingController extends Controller
     {
         try {
             $booking = $this->bookingService->findBooking($booking_id);
-            if ($this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
+            if (!$this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
                 return response()->json(['error' => "Unauthorized"]);
             }
-            return response()->json($booking);
+            return new BookingResource($booking);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
+            $statusCode = 500;
+
+            if ($e instanceof HttpExceptionInterface) {
+                $statusCode = $e->getStatusCode();
+            }
+
+            return response()->json(['error' => $e->getMessage()], $statusCode);
         }
     }
 
 
     public function update(UpdateBookingRequest $request, $booking_id)
     {
-        //
         $validated_data = $request->validated();
         $validated_data['booking_status'] = 'modified';
         try {
@@ -97,24 +108,23 @@ class BookingController extends Controller
             $booking = $this->bookingService->findBooking($booking_id);
 
             if (!$this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
-                return response()->json(['error' => "Unauthorized"]);
+                return response()->json(['error' => "Unauthorized"],403);
             }
 
             if ($this->bookingService->isBookingCompleted($booking_id)) {
-                return response()->json(['error' => "The Booking is already completed"]);
+                return response()->json(['error' => "The Booking is already completed"],422);
             }
 
             if ($this->bookingService->isBookingCancelled($booking_id)) {
-                return response()->json(['error' => "The Booking is already cancelled"]);
+                return response()->json(['error' => "The Booking is already cancelled"],422);
             }
 
-            $validated['booking_status'] = 'cancelled';
-            $request['booking_status'] = 'cancelled';
+            $validated = ['booking_status' => 'cancelled'];
 
-            $this->bookingService->updateBooking($request,$validated,$booking_id);
+            $this->bookingService->updateBooking(null, $validated, $booking_id);
             return response()->json(['message' => 'Booking Cancelled Successfully.']);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()],$e);
         }
     }
 
@@ -123,11 +133,11 @@ class BookingController extends Controller
     public function rateBooking(RateBookingRequest $request, $booking_id)
     {
         if (!$this->bookingService->isBookingCompleted($booking_id))
-            return response()->json(['error' => 'You cannot rate Uncompleated Booking'], 403);
-        try{
+            return response()->json(['error' => 'You cannot rate Uncompleated Booking'], 422);
+        try {
             $this->bookingService->updateBooking($request, $request->validated(), $booking_id);
             return response()->json('Rated Successfully');
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
     }

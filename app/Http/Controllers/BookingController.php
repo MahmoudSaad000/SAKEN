@@ -8,6 +8,8 @@ use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
+use App\Models\User;
+use App\Services\ApartmentService;
 use App\Services\BookingService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +19,12 @@ class BookingController extends Controller
 {
 
     protected $bookingService;
+    protected $apartmentService;
 
-    public function __construct(BookingService $bookingService)
+    public function __construct(BookingService $bookingService, ApartmentService $apartmentService)
     {
         $this->bookingService = $bookingService;
+        $this->apartmentService = $apartmentService;
     }
 
 
@@ -33,60 +37,17 @@ class BookingController extends Controller
     public function store(StoreBookingRequest $request)
     {
         $validated = $request->validated();
-
-        $extra = $this->bookingService->getExtraAttributes($request, $validated);
-        if ($extra->isNotEmpty()) {
-            return response()->json([
-                'error' => "Extra attributes: " . $extra->implode(', ')
-            ], 422);
-        }
-
-        $validated['user_id'] = Auth::user()->id;
-
-        try {
-
-            if ($this->bookingService->isThereDateConflict($validated)) {
-                return response()->json([
-                    'error' => "Date Conflict",
-                    'message' => "The date you selected for booking is not available because it conflicts with an existing reservation. Please choose another date."
-                ], 422);
-            }
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], $e);
-        }
-
-        try {
-            $booking = Booking::create($validated);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => "Something Went Wrong",
-                'details' => $e->getMessage()
-            ], 500);
-        }
-
+        $validated['renter_id'] = Auth::user()->id;
+        $booking = $this->bookingService->createBooking($request, $validated);
         return new BookingResource($booking);
     }
 
 
     public function show($booking_id)
     {
-        try {
-            $booking = $this->bookingService->findBooking($booking_id);
-            if (!$this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
-                return response()->json(['error' => "Unauthorized"]);
-            }
-            return new BookingResource($booking);
-        } catch (Exception $e) {
-            $statusCode = 500;
-
-            if ($e instanceof HttpExceptionInterface) {
-                $statusCode = $e->getStatusCode();
-            }
-
-            return response()->json(['error' => $e->getMessage()], $statusCode);
-        }
+        $booking = Booking::findOrFail($booking_id);
+        $this->bookingService->checkUserAuthrization($booking);
+        return new BookingResource($booking);
     }
 
 
@@ -94,51 +55,71 @@ class BookingController extends Controller
     {
         $validated_data = $request->validated();
         $validated_data['booking_status'] = 'modified';
-        try {
-            return $this->bookingService->updateBooking($request, $validated_data, $booking_id);
-        } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
-        }
+        $booking = $this->bookingService->updateBooking($request, $validated_data, $booking_id);
+        return new BookingResource($booking);
     }
 
 
     public function destroy($booking_id)
     {
+        $this->bookingService->cancelBooking($booking_id);
+        return response()->json(['message' => 'Booking Cancelled Successfully.']);
+    }
+
+    public function rate(RateBookingRequest $request, $booking_id)
+    {
+        $validated = $request->validated();
+        $this->bookingService->checkExtraAttributes($request,$validated);
+        $this->bookingService->rateBooking($validated,$booking_id);
+        return response()->json('Rated Successfully');
+    }
+
+    public function getAllBookings()
+    {
         try {
-            $booking = $this->bookingService->findBooking($booking_id);
-
-            if (!$this->bookingService->doesBookingBelongToUser(Auth::user(), $booking)) {
-                return response()->json(['error' => "Unauthorized"],403);
-            }
-
-            if ($this->bookingService->isBookingCompleted($booking_id)) {
-                return response()->json(['error' => "The Booking is already completed"],422);
-            }
-
-            if ($this->bookingService->isBookingCancelled($booking_id)) {
-                return response()->json(['error' => "The Booking is already cancelled"],422);
-            }
-
-            $validated = ['booking_status' => 'cancelled'];
-
-            $this->bookingService->updateBooking(null, $validated, $booking_id);
-            return response()->json(['message' => 'Booking Cancelled Successfully.']);
+            return BookingResource::collection(Booking::all());
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()],$e);
+            return response()->json(['error' => $e->getMessage()], $e);
         }
     }
 
-
-
-    public function rateBooking(RateBookingRequest $request, $booking_id)
+    public function getUnConfirmedBookings($apartment_id)
     {
-        if (!$this->bookingService->isBookingCompleted($booking_id))
-            return response()->json(['error' => 'You cannot rate Uncompleated Booking'], 422);
+
         try {
-            $this->bookingService->updateBooking($request, $request->validated(), $booking_id);
-            return response()->json('Rated Successfully');
+            $apartment = $this->apartmentService->findApartment($apartment_id);
+            if (!$this->apartmentService->doesApartmentBelongToUser($apartment)) {
+                return response()->json(['error' => "Unauthorized"], 403);
+            }
+
+            $unconfirmedBookings = $apartment->bookings()->where('booking_status', '=', 'pending')->get();
+            return BookingResource::collection($unconfirmedBookings);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function confirmBooking($booking_id)
+    {
+        try {
+            $booking = Booking::findOrFail($booking_id);
+            $booking->booking_status = 'confirmed';
+            $booking->save();
+            return response()->json(['message' => 'Booking Confirmed Successfully']);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e);
+        }
+    }
+
+    public function rejectBooking($booking_id)
+    {
+        try {
+            $booking = Booking::findOrFail($booking_id);
+            $booking->booking_status = 'rejected';
+            $booking->save();
+            return response()->json(['message' => 'Booking Rejected Successfully']);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e);
         }
     }
 }

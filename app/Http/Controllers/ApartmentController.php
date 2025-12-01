@@ -14,8 +14,8 @@ class ApartmentController extends Controller
      */
     public function index()
     {
-        $apartments=Auth::user()->tasks;
-   return response()->json($apartments,200);
+        $apartments = Auth::user()->tasks;
+        return response()->json($apartments, 200);
     }
 
     /**
@@ -31,8 +31,8 @@ class ApartmentController extends Controller
      */
     public function show(string $id)
     {
-        $apartment= Apartment::findOrFail($id);  
- return response()->json($apartment,200);
+        $apartment = Apartment::findOrFail($id);
+        return response()->json($apartment, 200);
     }
 
     /**
@@ -48,8 +48,8 @@ class ApartmentController extends Controller
      */
     public function destroy(string $id)
     {
-        $apartment= Apartment::findOrFail($id);  
- $apartment->delete () ;
- return response()->json(Null,204);
+        $apartment = Apartment::findOrFail($id);
+        $apartment->delete();
+        return response()->json(Null, 204);
     }
 }

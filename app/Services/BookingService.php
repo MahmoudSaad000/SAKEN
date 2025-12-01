@@ -2,9 +2,15 @@
 
 namespace App\Services;
 
+use App\Exceptions\CanceledBookingException;
+use App\Exceptions\CompletedBookingException;
+use App\Exceptions\DateConflictException;
+use App\Exceptions\ExtraAttributesException;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -22,40 +28,14 @@ class BookingService
         $this->apartmentService = $apartmentService;
     }
 
-    public function findBooking($booking_id)
+    public function updateBooking($request, $validated_request, $booking_id)
     {
-        try {
-            return Booking::findOrFail($booking_id);
-        } catch (ModelNotFoundException $e) {
-            throw new NotFoundHttpException("Booking Not Found", $e);
-        } catch (Exception $e) {
-            throw new Exception("Something Went Wrong", 500);
-        }
+        $booking = Booking::findOrFail($booking_id);
+        $this->checkForDateConflict($validated_request);
+        $this->checkExtraAttributes($request, $validated_request);
+        $this->checkUserAuthrization($booking);
+        return $booking->update($validated_request);
     }
-
-    public function doesBookingBelongToUser($user, $booking)
-    {
-        return $user->id == $booking->user_id;
-    }
-
-    public function updateBooking($request, $validated, $booking_id)
-    {
-        $booking = $this->findBooking($booking_id);
-
-        $extra = $this->getExtraAttributes($request, $validated);
-        if ($extra->isNotEmpty()) {
-            throw new HttpException(422, "Extra attributes: " . $extra->implode(', '));
-        }
-
-        if (!$this->doesBookingBelongToUser(Auth::user(), $booking)) {
-            throw new Exception(403, "Unauthorized");
-        }
-
-        $booking->update($validated);
-        return new BookingResource($booking);
-    }
-
-
 
     public function getExtraAttributes($request, $validated_data)
     {
@@ -65,24 +45,71 @@ class BookingService
         return collect(array_keys($request->all()))->diff(array_keys($validated_data));
     }
 
-    public function isBookingCompleted($booking_id)
+    public function cancelBooking($booking_id)
     {
-        $booking = $this->findBooking($booking_id);
-        return $booking->booking_status === self::STATUS_COMPLETED;
+        $booking = Booking::findOrFail($booking_id);
+        $this->checkUserAuthrization($booking);
+        $this->checkBookingStatus($booking);
+        $booking->booking_status = self::STATUS_CANCELLED;
+        $booking->save();
+        return $booking;
     }
 
-    public function isBookingCancelled($booking_id)
+    public function rateBooking($Validated,$booking_id)
     {
-        $booking = $this->findBooking($booking_id);
-        return $booking->booking_status === self::STATUS_CANCELLED;
+        $booking = Booking::findOrFail($booking_id);
+        $this->checkUserAuthrization($booking);
+
+        if ($booking->booking_status !== self::STATUS_COMPLETED) {
+            throw new CompletedBookingException("You Can't Rate Uncompleted Bookings");
+        }
+        $booking->rate = $Validated['rate'];
+        $booking->save();
+        return $booking;
     }
 
-    public function isThereDateConflict($data)
+    public function checkBookingStatus($booking)
     {
-        $apartment = $this->apartmentService->findApartment($data['apartment_id']);
-        return $apartment->bookings()
-            ->where('check_in_date', '<=', $data['check_out_date'])
-            ->where('check_out_date', '>=', $data['check_in_date'])
+        if ($booking->booking_status === self::STATUS_COMPLETED) {
+            throw new CompletedBookingException();
+        } else if ($booking->booking_status === self::STATUS_CANCELLED) {
+            throw new CanceledBookingException();
+        }
+    }
+
+    public function checkUserAuthrization($booking)
+    {
+        if (Auth::user()->id !== $booking->renter_id)
+            throw new AuthorizationException();
+    }
+
+    public function checkForDateConflict(array $validated_data)
+    {
+        $apartment = $this->apartmentService->findApartment($validated_data['apartment_id']);
+
+        $isThereDateConflict = $apartment->bookings()
+            ->where('check_in_date', '<=', $validated_data['check_out_date'])
+            ->where('check_out_date', '>=', $validated_data['check_in_date'])
             ->exists();
+
+        if ($isThereDateConflict) {
+            throw new DateConflictException();
+        }
+    }
+
+    public function checkExtraAttributes($request, $validated_request)
+    {
+        $extra = $this->getExtraAttributes($request, $validated_request);
+
+        if ($extra->isNotEmpty()) {
+            throw new ExtraAttributesException($extra);
+        }
+    }
+
+    public function createBooking($request, $validated_request)
+    {
+        $this->checkExtraAttributes($request, $validated_request);
+        $this->checkForDateConflict($validated_request);
+        return Booking::create($validated_request);
     }
 }

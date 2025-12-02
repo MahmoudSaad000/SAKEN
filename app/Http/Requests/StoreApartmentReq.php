@@ -22,16 +22,18 @@ class StoreApartmentReq extends FormRequest
     public function rules(): array
     {
         return [
-           'description'=>'string|nullable',
-           'area'=>'smallInteger|required|min:5',
-           'rooms'=>'tinyInteger|min:1|required',
-           'living_rooms'=>'tinyInteger|min:1|required',
-           'bathrooms'=>'tinyInteger|min:1|required',
-           'rental_price'=>'Integer|min:1|required',
-           'address'=>'required|string|max:50',
-           'status'=>'required|in:Booked,Free',
-           'user_id'=>'required|integer'
-           
+            'description' => 'string|nullable',
+            'area' => 'integer|required|min:5',
+            'rooms' => 'integer|min:1|required',
+            'living_rooms' => 'integer|min:1|required',
+            'bathrooms' => 'integer|min:1|required',
+            'rental_price' => 'integer|min:1|required',
+            'address' => 'required|string|max:50',
+            'status' => 'required|in:Booked,Free',
+            'city_id' => 'required|integer|exists:cities,id',
+            'images' => 'required|array|min:1',
+            'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
+            'average_rate' => 'nullable',
         ];
     }
 }

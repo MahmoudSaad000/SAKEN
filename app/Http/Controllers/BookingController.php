@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Http\Requests\RateBookingRequest;
 use App\Models\Booking;
+use App\Http\Requests\RateBookingRequest;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
@@ -17,7 +16,6 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class BookingController extends Controller
 {
-
     protected $bookingService;
     protected $apartmentService;
 
@@ -27,10 +25,10 @@ class BookingController extends Controller
         $this->apartmentService = $apartmentService;
     }
 
-
     public function index()
     {
         $user = Auth::user();
+
         return BookingResource::collection($user->bookings);
     }
 
@@ -42,14 +40,12 @@ class BookingController extends Controller
         return new BookingResource($booking);
     }
 
-
     public function show($booking_id)
     {
         $booking = Booking::findOrFail($booking_id);
         $this->bookingService->checkUserAuthrization($booking);
         return new BookingResource($booking);
     }
-
 
     public function update(UpdateBookingRequest $request, $booking_id)
     {
@@ -58,7 +54,6 @@ class BookingController extends Controller
         $booking = $this->bookingService->updateBooking($request, $validated_data, $booking_id);
         return new BookingResource($booking);
     }
-
 
     public function destroy($booking_id)
     {

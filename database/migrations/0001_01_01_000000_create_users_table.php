@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('picture');
             $table->string('id_card_image');
             $table->boolean('is_approved')->default('0');
-            $table->enum('role',['admin','apartment_owner','renter']);
+            $table->enum('role', ['admin', 'apartment_owner', 'renter']);
             $table->rememberToken();
             $table->timestamps();
         });

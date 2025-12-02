@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+namespace App\Services;
+
 use App\Models\Apartment;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -16,11 +18,22 @@ class ApartmentService
     {
         //
     }
+
     public function findApartment($apartment_id)
     {
-        return Apartment::findOrFail($apartment_id);
-    }
-    public function doesApartmentBelongToUser($apartment){
-        return (Auth::user()->id == $apartment->user_id);
+
+        try {
+            return Apartment::findOrFail($apartment_id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Apartment Not Found',
+                'details' => $e->getMessage(),
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Something Went Wrong',
+                'details' => $e->getMessage(),
+            ], 404);
+        }
     }
 }

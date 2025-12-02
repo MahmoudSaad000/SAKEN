@@ -20,11 +20,11 @@ return new class extends Migration
             $table->tinyInteger('bathrooms');
             $table->integer('rental_price');
             $table->string('address');
-            $table->enum('status',['Booked','Free']);
-            $table->decimal('average_rate',3,2)->nullable();
+            $table->enum('status', ['Booked', 'Free'])->default('Free');
+            $table->decimal('average_rate', 3, 2)->nullable();
             $table->date('offer_date')->nullable();
-           // $table->foreignId('city_id')->constrained('cities');
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('city_id')->constrained('cities')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

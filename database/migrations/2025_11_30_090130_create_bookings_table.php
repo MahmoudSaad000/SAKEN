@@ -1,9 +1,7 @@
 <?php
 
-use Illuminate\Container\Attributes\DB;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,7 +9,6 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-
     public function up(): void
     {
         $statuses = [
@@ -25,7 +22,7 @@ return new class extends Migration
             'payment_failed', // something in payment went wrong
             'no_show', // client pay and haven't checked in
             'checked_in', // client arraived to appartment
-            'modified' // client modifie his request
+            'modified', // client modifie his request
         ];
 
         Schema::create('bookings', function (Blueprint $table) use ($statuses) {
@@ -34,7 +31,7 @@ return new class extends Migration
             $table->foreignId('apartment_id')->constrained('apartments');
             $table->date('check_in_date')->check('check_in_date >= CURRENT_DATE');
             $table->date('check_out_date')->check('check_out_date >= check_in_date');
-            $table->enum('payment_method',['credit','bank_transfer','cash','digital_wallet']);
+            $table->enum('payment_method', ['credit', 'bank_transfer', 'cash', 'digital_wallet']);
             $table->enum('booking_status', $statuses)->default('pending');
             $table->tinyInteger('rate')->check('rate >= 1 AND rate <= 10')->nullable();
             $table->timestamps();

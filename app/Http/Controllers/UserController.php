@@ -64,11 +64,7 @@ class UserController extends Controller
                 401
             );
 
-<<<<<<< HEAD
         if ($user = User::where('phone_number', $request->phone_number)->where('is_approved', "1")->first()) {
-=======
-        if ($user = User::where('phone_number', $request->phone_number)->where('is_approved', '1')->first()) {
->>>>>>> 0ac9ea79b11df290f2d73e588f91c485f3ad1182
             $token = $user->createToken('auth_Token')->plainTextToken;
             return response()->json([
                 'message' => 'Login Successfuly. ',

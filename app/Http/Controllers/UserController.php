@@ -6,7 +6,6 @@ use App\Http\Requests\RegisterUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +15,6 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-
     public function register(RegisterUserRequest $request)
     {
 
@@ -30,7 +28,6 @@ class UserController extends Controller
             'role' => $validated['role'],
             'password' => Hash::make($validated['password']),
         ];
-
 
         if ($request->hasFile('picture')) {
             $picturePath = $request->file('picture')->store('profile_pictures', 'public');
@@ -46,7 +43,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User Registered Successfully.',
-            'User' => $user
+            'User' => $user,
         ], 201);
     }
 
@@ -54,22 +51,24 @@ class UserController extends Controller
     {
         $request->validate([
             'phone_number' => 'required|digits:10|exists:users,phone_number',
-            'password' => 'required'
+            'password' => 'required',
         ]);
-        if (!Auth::attempt($request->only('phone_number', 'password')))
+        if (! Auth::attempt($request->only('phone_number', 'password'))) {
             return response()->json(
                 [
                     'message' => 'Envalid Phone_Number Or Password. ',
                 ],
                 401
             );
+        }
 
         if ($user = User::where('phone_number', $request->phone_number)->where('is_approved', "1")->first()) {
             $token = $user->createToken('auth_Token')->plainTextToken;
+
             return response()->json([
                 'message' => 'Login Successfuly. ',
-                'User'    => $user,
-                'Token'   => $token
+                'User' => $user,
+                'Token' => $token,
             ], 201);
         } else {
             return response()->json([
@@ -81,8 +80,9 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json([
-            'message' => 'Logout Successfuly. '
+            'message' => 'Logout Successfuly. ',
         ]);
     }
 
@@ -93,7 +93,7 @@ class UserController extends Controller
         return response()->json([
             'message' => 'All users retrieved successfully.',
             'users' => $users,
-            'count' => $users->count()
+            'count' => $users->count(),
         ], 200);
     }
 

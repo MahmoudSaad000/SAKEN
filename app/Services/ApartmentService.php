@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Apartment;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,11 +17,10 @@ class ApartmentService
     {
         //
     }
-    public function findApartment($apartment_id)
+    public function checkUserAuthrization($apartment)
     {
-        return Apartment::findOrFail($apartment_id);
+        if (Auth::user()->id !== $apartment->user_id)
+            throw new AuthorizationException();
     }
-    public function doesApartmentBelongToUser($apartment){
-        return (Auth::user()->id == $apartment->user_id);
-    }
+
 }

@@ -24,13 +24,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
 
-
-    Route::prefix('/bookings')->group(function () {
         Route::middleware('isRenter')->group(function () {
-            Route::apiResource('', BookingController::class);
-            Route::put('{booking}/rate', [BookingController::class, 'rateBooking']);
+            Route::apiResource('/bookings', BookingController::class);
+            Route::put('bookings/{booking}/rate', [BookingController::class, 'rateBooking']);
         });
 
+
+    Route::prefix('/bookings')->group(function () {
         Route::middleware('isAdmin')->group(function () {
             Route::get('all', [BookingController::class, 'getAllBookings']);
         });

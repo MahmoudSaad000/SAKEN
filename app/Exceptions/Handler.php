@@ -5,75 +5,108 @@ namespace App\Exceptions;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Symfony\Component\EventDispatcher\DependencyInjection\ExtractingEventDispatcher;
 use Throwable;
+
+// CUSTOM EXCEPTIONS
+use App\Exceptions\DateConflictException;
+use App\Exceptions\ExtraAttributesException;
+use App\Exceptions\CompletedBookingException;
+use App\Exceptions\CanceledBookingException;
 
 class Handler extends ExceptionHandler
 {
+    /**
+     * Exceptions that should not be reported.
+     */
     protected $dontReport = [
-        // Add exceptions you don’t want logged
+        //
     ];
 
+    /**
+     * Inputs that should never be flashed for validation exceptions.
+     */
     protected $dontFlash = [
         'password',
         'password_confirmation',
     ];
 
-    public function register()
+    /**
+     * Force JSON response for API requests
+     */
+    protected function shouldReturnJson($request, Throwable $e): bool
     {
-        $this->reportable(function (Throwable $e) {
-            // Custom logging if needed
-        });
+        // Force JSON for all API routes
+        return $request->is('api/*');
+    }
 
-        $this->renderable(function (Throwable $e, $request) {
-            if ($request->expectsJson()) {
+    /**
+     * Get the original exception (unwrap wrapped exceptions)
+     */
+    protected function getOriginalException(Throwable $e): Throwable
+    {
+        while ($e->getPrevious()) {
+            $e = $e->getPrevious();
+        }
+        return $e;
+    }
 
-                // Custom: Date conflict
-                if ($e instanceof DateConflictException) {
-                    return response()->json([
-                        'error'   => 'Date Conflict',
-                        'message' => $e->getMessage(),
-                    ], 422);
-                }
+    /**
+     * Render an exception into an HTTP response.
+     */
+    public function render($request, Throwable $e)
+    {
+        // Get the original exception in case it's wrapped
+        $exception = $this->getOriginalException($e);
 
-                if ($e instanceof ExtraAttributesException) {
-                    return response()->json([
-                        'error' => $e->getMessage() . $e->getAttributes()
-                    ], 422);
-                }
+        // Force JSON response for API
+        if ($this->shouldReturnJson($request, $exception)) {
 
-                if ($e instanceof ModelNotFoundException) {
-                    return response()->json([
-                        'error'   => 'Resource Not Found',
-                        'message' => $e->getMessage(),
-                    ], 404);
-                }
-
-                if ($e instanceof AuthorizationException) {
-                    return response()->json([
-                        'error'   => 'Unauthorized',
-                        'message' => $e->getMessage(),
-                    ], 403);
-                }
-
-                if ($e instanceof CompletedBookingException) {
-                    return response()->json([
-                        'error'   => 'Invalid Booking Status',
-                        'message' => $e->getMessage(),
-                    ], 422);
-                }
-
-                if ($e instanceof CanceledBookingException) {
-                    return response()->json([
-                        'error'   => 'Invalid Booking Status',
-                        'message' => $e->getMessage(),
-                    ], 422);
-                }
-
+            // Handle custom exceptions
+            if ($exception instanceof DateConflictException) {
                 return response()->json([
-                    'error' => $e->getMessage(),
-                ], 500);
+                    'error'   => 'Date Conflict',
+                    'message' => $exception->getMessage(),
+                ], 422);
             }
-        });
+
+            if ($exception instanceof ExtraAttributesException) {
+                return response()->json([
+                    'error' => 'Invalid Attributes',
+                    'message' => $exception->getMessage(),
+                    'attributes' => $exception->getAttributes(),
+                ], 422);
+            }
+
+            if ($exception instanceof CompletedBookingException || $exception instanceof CanceledBookingException) {
+                return response()->json([
+                    'error'   => 'Invalid Booking Status',
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            // Standard Laravel exceptions
+            if ($exception instanceof ModelNotFoundException) {
+                return response()->json([
+                    'error'   => 'Resource Not Found',
+                    'message' => $exception->getMessage(),
+                ], 404);
+            }
+
+            if ($exception instanceof AuthorizationException) {
+                return response()->json([
+                    'error'   => 'Unauthorized',
+                    'message' => $exception->getMessage(),
+                ], 403);
+            }
+
+            // Default catch-all for API exceptions
+            return response()->json([
+                'error'   => 'Server Error',
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        // Fallback to default HTML error page for non-API requests
+        return parent::render($request, $e);
     }
 }

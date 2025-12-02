@@ -18,6 +18,10 @@ class ApartmentService
     {
         //
     }
+    public function doesApartmentBelongToUser()
+    {
+        
+    }
 
     public function findApartment($apartment_id)
     {

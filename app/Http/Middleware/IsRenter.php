@@ -16,13 +16,13 @@ class IsRenter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'renter') {
+        if (Auth::user()->role === 'renter') 
             return $next($request);
-
+       
         return response()->json([
             'message' => 'Unauthorized',
             'description' => "You Don't Have Permission To Do That",
         ], 403);
     }
-}
+
 }

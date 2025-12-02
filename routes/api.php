@@ -1,9 +1,5 @@
 <?php
 
-<<<<<<< HEAD
-=======
-use App\Http\Controllers\ApartmentController;
->>>>>>> 0ac9ea79b11df290f2d73e588f91c485f3ad1182
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -13,16 +9,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
-<<<<<<< HEAD
-=======
-Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
-
->>>>>>> 0ac9ea79b11df290f2d73e588f91c485f3ad1182
 
 
 Route::middleware('auth:sanctum')->group(function () {
 
-<<<<<<< HEAD
     Route::post('logout', [UserController::class, 'logout']);
     Route::get('user', [UserController::class, 'GetUser']);
     Route::delete('user/delete-account', [UserController::class, 'deleteMyAccount']);
@@ -60,31 +50,5 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
             Route::put('/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
         });
-=======
-    Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
-
-
-    Route::prefix('/bookings')->group(function () {
-        Route::middleware('isRenter')->group(function () {
-            Route::apiResource('', BookingController::class);
-            Route::put('{booking}/rate', [BookingController::class, 'rateBooking']);
-        });
-
-        Route::middleware('isAdmin')->group(function () {
-            Route::get('all', [BookingController::class, 'getAllBookings']);
-        });
-
-        Route::middleware('isOwner')->group(function () {
-            Route::get('{apartment}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
-            Route::put('{booking}/confirm', [BookingController::class, 'confirmBooking']);
-            Route::put('{booking}/reject', [BookingController::class, 'rejectBooking']);
-        });
-    });
-
-
-    Route::prefix('/apartment')->group(function () {
-
-        Route::apiResource('', ApartmentController::class);
->>>>>>> 0ac9ea79b11df290f2d73e588f91c485f3ad1182
     });
 });

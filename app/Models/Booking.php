@@ -17,7 +17,7 @@ class Booking extends Model
         'check_in_date',
         'check_out_date',
         'apartment_id',
-        'user_id'
+        'renter_id'
     ];
 
     protected $table = 'bookings';
@@ -30,11 +30,24 @@ class Booking extends Model
 
     public function renter()
     {
-       return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function apartment()
     {
         return $this->belongsTo(Apartment::class);
+    }
+
+    public function scopeConflicting($query, $apartmentId, $checkIn, $checkOut, $excludeBookingId = null)
+    {
+        $query->where('apartment_id', $apartmentId)
+            ->where('check_in_date', '<=', $checkOut)
+            ->where('check_out_date', '>=', $checkIn);
+
+        if ($excludeBookingId) {
+            $query->where('id', '!=', $excludeBookingId);
+        }
+
+        return $query;
     }
 }

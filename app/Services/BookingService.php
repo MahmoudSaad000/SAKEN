@@ -7,6 +7,7 @@ use App\Exceptions\CompletedBookingException;
 use App\Exceptions\DateConflictException;
 use App\Exceptions\ExtraAttributesException;
 use App\Http\Resources\BookingResource;
+use App\Models\Apartment;
 use App\Models\Booking;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -32,11 +33,30 @@ class BookingService
     public function updateBooking($request, $validated_request, $booking_id)
     {
         $booking = Booking::findOrFail($booking_id);
-        $this->checkForDateConflict($validated_request);
+        $validated_request['apartment_id'] = $booking->apartment_id;
+
+        // Only check date conflict if the user provided both dates
+        if (isset($validated_request['check_in_date'], $validated_request['check_out_date'])) {
+            $conflict = Booking::conflicting(
+                $validated_request['apartment_id'],
+                $validated_request['check_in_date'],
+                $validated_request['check_out_date'],
+                $booking_id
+            )->exists();
+
+            if ($conflict) {
+                throw new DateConflictException();
+            }
+        }
+
         $this->checkExtraAttributes($request, $validated_request);
         $this->checkUserAuthrization($booking);
-        return $booking->update($validated_request);
+
+        $booking->update($validated_request);
+
+        return $booking;
     }
+
 
     public function getExtraAttributes($request, $validated_data)
     {
@@ -56,7 +76,7 @@ class BookingService
         return $booking;
     }
 
-    public function rateBooking($Validated,$booking_id)
+    public function rateBooking($Validated, $booking_id)
     {
         $booking = Booking::findOrFail($booking_id);
         $this->checkUserAuthrization($booking);
@@ -84,19 +104,6 @@ class BookingService
             throw new AuthorizationException();
     }
 
-    public function checkForDateConflict(array $validated_data)
-    {
-        $apartment = $this->apartmentService->findApartment($validated_data['apartment_id']);
-
-        $isThereDateConflict = $apartment->bookings()
-            ->where('check_in_date', '<=', $validated_data['check_out_date'])
-            ->where('check_out_date', '>=', $validated_data['check_in_date'])
-            ->exists();
-
-        if ($isThereDateConflict) {
-            throw new DateConflictException();
-        }
-    }
 
     public function checkExtraAttributes($request, $validated_request)
     {
@@ -110,7 +117,17 @@ class BookingService
     public function createBooking($request, $validated_request)
     {
         $this->checkExtraAttributes($request, $validated_request);
-        $this->checkForDateConflict($validated_request);
+
+        $conflict = Booking::conflicting(
+            $validated_request['apartment_id'],
+            $validated_request['check_in_date'],
+            $validated_request['check_out_date']
+        )->exists();
+
+        if ($conflict) {
+            throw new DateConflictException();
+        }
+
         return Booking::create($validated_request);
     }
 }

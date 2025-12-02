@@ -7,9 +7,9 @@ use Exception;
 class ExtraAttributesException extends Exception
 {
     protected $extraAttributes;
-    public function __construct($extraAttributes,$message = "Extra Attributes : ")
+    public function __construct($extraAttributes,$message = "Extra Attributes : ",$code = 422)
     {
-        parent::__construct($message);
+        parent::__construct($message,$code);
         $this->extraAttributes = $extraAttributes;
     }
     public function getAttributes(){

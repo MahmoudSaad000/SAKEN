@@ -48,6 +48,10 @@ class User extends Authenticatable
 
     public function bookings()
     {
+<<<<<<< HEAD
         $this->hasMany(Bookings::class);
+=======
+        return $this->hasMany(Booking::class);
+>>>>>>> 0ac9ea79b11df290f2d73e588f91c485f3ad1182
     }
 }

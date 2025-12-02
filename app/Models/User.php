@@ -19,10 +19,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $guarded = [
-        'id',
-        'is_approved'
+        'id'
+       // 'is_approved'
     ];
-
 
     /**
      * The attributes that should be hidden for serialization.
@@ -49,6 +48,6 @@ class User extends Authenticatable
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class, 'renter_id');
+        return $this->hasMany(Booking::class);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RegisterUserRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,12 +23,12 @@ class RegisterUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'phone_number' => 'required|digits:10|unique:users,Phone_Number',
-            'password' => 'required|string|min:8|confirmed',
+            'firstname' => 'sometimes|string|max:255',
+            'lastname' => 'sometimes|string|max:255',
+            // 'phone_number' => 'sometimes|digits:10|unique:users,Phone_Number',
+            'password' => 'sometimes|string|min:8|confirmed',
             'date_of_birth' => [
-                'required',
+                'sometimes',
                 'date',
                 function ($attribute, $value, $fail) {
                     $age = Carbon::parse($value)->age;
@@ -42,9 +42,9 @@ class RegisterUserRequest extends FormRequest
                     }
                 },
             ],
-            'picture' => 'required|image|mimes:png,jpg,jpeg,gif|max:2048',
-            'id_card_image' => 'required|image|mimes:png,jpg,jpeg,gif|max:2048',
-            'role' => 'required|in:apartment_owner,renter',
+            'picture' => 'sometimes|image|mimes:png,jpg,jpeg,gif|max:2048',
+            'id_card_image' => 'sometimes|image|mimes:png,jpg,jpeg,gif|max:2048',
+            'role' => 'sometimes|apartment_owner,renter',
         ];
     }
 }

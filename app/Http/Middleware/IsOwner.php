@@ -18,7 +18,7 @@ class IsOwner
     {
         if (Auth::user()->role === 'apartment_owner')
             return $next($request);
-        
+
         return response()->json([
             'message' => "Unauthorized",
             'description' => "You Don't Have Permission To Do That"

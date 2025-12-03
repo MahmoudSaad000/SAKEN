@@ -9,8 +9,10 @@ use App\Models\Apartment;
 use App\Models\Picture;
 use App\Services\ApartmentService;
 use Exception;
-// use App\ApartmentService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Requests\FilterReq;
+use PHPUnit\Event\TestSuite\Filtered;
 
 class ApartmentController extends Controller
 {
@@ -117,4 +119,18 @@ class ApartmentController extends Controller
 
         return response()->json('deleted successfully', 204);
     }
+
+     public function filter(FilterReq $request)
+{
+    $apartments = Apartment::with('city.governorate')
+        ->governorate($request->governorate_id)   
+        ->city($request->city_id)
+        ->priceBetween($request->min_price, $request->max_price)
+        ->areaBetween($request->min_area, $request->max_area)
+        ->rooms($request->rooms)
+        ->paginate(10);
+
+    return ApartmentResource::collection($apartments);
+}
+
 }

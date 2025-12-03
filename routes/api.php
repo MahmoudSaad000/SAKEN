@@ -3,39 +3,82 @@
 use App\Http\Controllers\ApartmentController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
+
+
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
 
 
-Route::middleware('auth:sanctum')->group(function(){
+Route::middleware('auth:sanctum')->group(function () {
 
-    // Admin-only route
-    Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
-    
-    // Bookings routes=============//
-        
-        // Renter routes
-        Route::middleware('isRenter')->group(function () {
-            Route::apiResource('/bookings', BookingController::class);
-            Route::put('/bookings/{booking}/rate', [BookingController::class, 'rate']);
-        });
-        
-        // Admin routes
+    Route::post('logout', [UserController::class, 'logout']);
+    Route::get('user', [UserController::class, 'GetUser']);
+    Route::delete('user/delete-account', [UserController::class, 'deleteMyAccount']);
+
+    Route::prefix('/users')->group(function () {
+
+        Route::post('/{id}', [UserController::class, 'update']);
+
         Route::middleware('isAdmin')->group(function () {
-            Route::get('/bookings/all', [BookingController::class, 'getAllBookings']);
+
+            Route::put('/{id}/approve', [UserController::class, 'approveUser']);
+            Route::put('/{id}/reject', [UserController::class, 'rejectUser']);
+            Route::put('/approveAll', [UserController::class, 'approveAllUsers']);
+            Route::put('/rejectAll', [UserController::class, 'rejectAllUsers']);
+            Route::get('/isfalse', [UserController::class, 'getAllUsersis_approved_false']);
+            Route::get('/istrue', [UserController::class, 'getAllUsersis_approved_true']);
         });
-        
-        // Owner routes
+    });
+
+    Route::prefix('/bookings')->group(function () {
+
+        Route::middleware('isRenter')->group(function () {
+
+            Route::apiResource('', BookingController::class);
+            Route::put('/{booking_id}/rate', [BookingController::class, 'rateBooking'])->middleware('isRenter');
+        });
+
+        Route::middleware('isAdmin')->group(function () {
+
+            Route::get('/all', [BookingController::class, 'getAllBookings'])->middleware('isAdmin');
+        });
+
         Route::middleware('isOwner')->group(function () {
 
-            Route::get('/bookings/{apartment_id}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
-            Route::put('/bookings/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
-            Route::put('/bookings/{booking_id}/reject', [BookingController::class, 'rejectBooking']);
+            Route::get('/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
+            Route::put('/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
         });
-    // ===========================================// 
-    
-    Route::apiResource('apartment',ApartmentController::class);
+
+    Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
+
+
+    Route::prefix('/bookings')->group(function () {
+        Route::middleware('isRenter')->group(function () {
+            Route::apiResource('', BookingController::class);
+            Route::put('{booking}/rate', [BookingController::class, 'rateBooking']);
+        });
+
+        Route::middleware('isAdmin')->group(function () {
+            Route::get('all', [BookingController::class, 'getAllBookings']);
+        });
+
+        Route::middleware('isOwner')->group(function () {
+            Route::get('{apartment}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
+            Route::put('{booking}/confirm', [BookingController::class, 'confirmBooking']);
+            Route::put('{booking}/reject', [BookingController::class, 'rejectBooking']);
+        });
+    });
+
+
+    Route::prefix('/apartment')->group(function () {
+
+        Route::apiResource('', ApartmentController::class);
+
+    });
+});
+
+
 });

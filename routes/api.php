@@ -32,6 +32,7 @@ Route::prefix('bookings')->group(function () {
         Route::put('{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
     });
 
-    Route::apiResource('apartment',ApartmentController::class);
-
 });
+
+ Route::apiResource('apartment',ApartmentController::class)->middleware('auth:sanctum');
+ Route::get('apartments/filter', [ApartmentController::class, 'filter'])->middleware('auth:sanctum');

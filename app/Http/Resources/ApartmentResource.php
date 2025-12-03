@@ -25,6 +25,7 @@ class ApartmentResource extends JsonResource
             'status' => $this->status,
             'average rate' => $this->average_rate,
             'city' => $this->city->name,
+            'governorate' => $this->city->governorate->name,
             'owner' => $this->user->firstname.' '.$this->user->lastname,
             'pictures' => $this->pictures->pluck('picture'),
         ];

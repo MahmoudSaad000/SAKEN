@@ -19,6 +19,7 @@ use App\Services\BookingService;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -50,8 +51,6 @@ class BookingController extends Controller
             return new BookingResource($booking);
         } catch (ExtraAttributesException $e) {
             return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
         } catch (DateConflictException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         } catch (Exception $e) {
@@ -69,7 +68,7 @@ class BookingController extends Controller
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
+            return response()->json(['error' => "Booking Not Found."], 404);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -86,7 +85,7 @@ class BookingController extends Controller
         } catch (ExtraAttributesException $e) {
             return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
         } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
+            return response()->json(['error' => "Booking Not Found."], 404);
         } catch (DateConflictException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         } catch (AuthorizationException $e) {
@@ -99,11 +98,15 @@ class BookingController extends Controller
     // cancle booking by the renter
     public function destroy($booking_id)
     {
-        try{
+        try {
             $this->bookingService->cancelBooking($booking_id);
-            return response()->json(['message' => 'Booking Cancelled Successfully.']);
-        }catch (CompletedBookingException $e) {
+            return response()->json(['message' => 'Booking Canceled Successfully.']);
+        } catch (CompletedBookingException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => "Booking Not Found."], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (CanceledBookingException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         } catch (Exception $e) {
@@ -140,30 +143,53 @@ class BookingController extends Controller
     // get unconfirmed and modified bookings by the apartment owner in order to approve them
     public function getUnConfirmedBookings($apartment_id)
     {
-        $apartment = Apartment::findOrFail($apartment_id);
-
-        $this->apartmentService->checkUserAuthrization($apartment);
-
-        $unconfirmedBookings = $apartment->bookings()
-            ->whereIn('booking_status', ['pending', 'modified'])
-            ->get();
-
-        return BookingResource::collection($unconfirmedBookings);
+        try {
+            $apartment = Apartment::findOrFail($apartment_id);
+            $this->apartmentService->checkUserAuthrization($apartment);
+            $unconfirmedBookings = $this->apartmentService->getUnconfirmedModifiedBookings($apartment);
+            return BookingResource::collection($unconfirmedBookings);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => "Booking Not Found."], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
     // confirm renter booking by apartment owner
     public function confirmBooking($booking_id)
     {
-        $booking = Booking::findOrFail($booking_id);
-        $booking->booking_status = 'confirmed';
-        $booking->save();
-        return response()->json(['message' => 'Booking Confirmed Successfully']);
+        try {
+            $booking = Booking::findOrFail($booking_id);
+            $apartment = Apartment::findOrFail($booking->apartment_id);
+            $this->apartmentService->checkUserAuthrization($apartment);
+            $booking->booking_status = 'confirmed';
+            $booking->save();
+            return response()->json(['message' => 'Booking Confirmed Successfully']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => "Booking Not Found."], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        }
     }
     // reject reneter booking by apartment owner 
     public function rejectBooking($booking_id)
     {
-        $booking = Booking::findOrFail($booking_id);
-        $booking->booking_status = 'rejected';
-        $booking->save();
-        return response()->json(['message' => 'Booking Rejected Successfully']);
+        try {
+            $booking = Booking::findOrFail($booking_id);
+            $apartment = Apartment::findOrFail($booking->apartment_id);
+            $this->apartmentService->checkUserAuthrization($apartment);
+            $booking->booking_status = 'reject';
+            $booking->save();
+            return response()->json(['message' => 'Booking Rejected Successfully']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => "Booking Not Found."], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        }
     }
 }

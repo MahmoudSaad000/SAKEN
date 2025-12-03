@@ -33,8 +33,12 @@ class BookingService
     public function updateBooking($request, $validated_request, $booking_id)
     {
         $booking = Booking::findOrFail($booking_id);
-        $validated_request['apartment_id'] = $booking->apartment_id;
 
+        $this->checkExtraAttributes($request, $validated_request);
+        $this->checkUserAuthrization($booking);
+
+        $validated_request['apartment_id'] = $booking->apartment_id;
+        
         // Only check date conflict if the user provided both dates
         if (isset($validated_request['check_in_date'], $validated_request['check_out_date'])) {
             $conflict = Booking::conflicting(
@@ -48,9 +52,6 @@ class BookingService
                 throw new DateConflictException();
             }
         }
-
-        $this->checkExtraAttributes($request, $validated_request);
-        $this->checkUserAuthrization($booking);
 
         $booking->update($validated_request);
 

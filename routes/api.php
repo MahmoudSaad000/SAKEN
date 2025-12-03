@@ -12,10 +12,6 @@ Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
 
 
-Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
-
-
-
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('logout', [UserController::class, 'logout']);

@@ -83,6 +83,7 @@ class BookingService
         if ($booking->booking_status !== self::STATUS_COMPLETED) {
             throw new CompletedBookingException("You Can't Rate Uncompleted Bookings");
         }
+
         $booking->rate = $Validated['rate'];
         $booking->save();
         return $booking;
@@ -99,7 +100,7 @@ class BookingService
 
     public function checkUserAuthrization($booking)
     {
-        if (Auth::user()->id !== $booking->renter_id)
+        if (Auth::user()->id !== $booking->user_id)
             throw new AuthorizationException();
     }
 

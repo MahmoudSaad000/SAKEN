@@ -24,9 +24,9 @@ class ApartmentResource extends JsonResource
             'address' => $this->address,
             'status' => $this->status,
             'average rate' => $this->average_rate,
-            'city' => $this->city->name,
-            'owner' => $this->user->firstname.' '.$this->user->lastname,
-            'pictures' => $this->pictures->pluck('picture'),
+            // 'city' => $this->city->name,
+            // 'owner' => $this->user->firstname . ' ' . $this->user->lastname,
+            // 'pictures' => $this->pictures->pluck('picture'),
         ];
     }
 }

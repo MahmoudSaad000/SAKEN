@@ -14,10 +14,10 @@ class BookingResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // $appartment = new AppartmentRecource($this->whenLoaded('appartment'));
-        // $renter = new UserRecource($this->whenLoaded('user'));
+        // $apartment = new ApartmentResource($this->whenLoaded('apartment'));
+        // $renter = new UserResource($this->whenLoaded('renter'));
         $duration_in_days = $this->check_in_date->diffInDays($this ->check_out_date);
-        // $tatal_price = $duration_in_days * $apartment->rental_price;
+        // $tatal_price = $duration_in_days * $apartment['rental price'];
  
         return [
             'id' => $this->id,

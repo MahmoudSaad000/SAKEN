@@ -17,7 +17,7 @@ class Booking extends Model
         'check_in_date',
         'check_out_date',
         'apartment_id',
-        'renter_id'
+        'user_id'
     ];
 
     protected $table = 'bookings';

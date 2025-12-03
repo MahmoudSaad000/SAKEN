@@ -30,7 +30,7 @@ return new class extends Migration
 
         Schema::create('bookings', function (Blueprint $table) use ($statuses) {
             $table->id();
-            $table->foreignId('renter_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users');
             $table->foreignId('apartment_id')->constrained('apartments');
             $table->date('check_in_date')->check('check_in_date >= CURRENT_DATE');
             $table->date('check_out_date')->check('check_out_date >= check_in_date');

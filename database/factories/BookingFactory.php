@@ -35,7 +35,7 @@ class BookingFactory extends Factory
 
         return [
             //
-            'renter_id' => User::inRandomOrder()->first()->id,
+            'user_id' => User::inRandomOrder()->first()->id,
             'apartment_id' => Apartment::inRandomOrder()->first()->id,
             'check_in_date' => $this->faker->dateTimeBetween('now', '+3 months'),
             'check_out_date' => $this->faker->dateTimeBetween('+3 months', '+6 months'),

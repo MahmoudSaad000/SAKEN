@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\City;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -29,7 +30,8 @@ class ApartmentFactory extends Factory
             'status' => $this->faker->randomElement(['Booked', 'Free']),
             'average_rate' => $this->faker->randomFloat(2, 1, 5),
             'offer_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
-            'user_id' => User::inRandomOrder()->first()->id,
+            'city_id' => City::inRandomOrder()->first()->id,
+            'user_id' => User::inRandomOrder()->first()->id
         ];
     }
 }

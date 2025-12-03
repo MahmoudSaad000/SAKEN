@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CanceledBookingException;
+use App\Exceptions\CompletedBookingException;
 use App\Exceptions\DateConflictException;
 use App\Exceptions\ExtraAttributesException;
 use App\Http\Requests\RateBookingRequest;
@@ -42,7 +44,7 @@ class BookingController extends Controller
     public function store(StoreBookingRequest $request)
     {
         $validated = $request->validated();
-        $validated['renter_id'] = Auth::user()->id;
+        $validated['user_id'] = Auth::user()->id;
         try {
             $booking = $this->bookingService->createBooking($request, $validated);
             return new BookingResource($booking);
@@ -53,7 +55,7 @@ class BookingController extends Controller
         } catch (DateConflictException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()],500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -69,7 +71,7 @@ class BookingController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => $e->getMessage()], 404);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()],500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -90,23 +92,45 @@ class BookingController extends Controller
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()],500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     // cancle booking by the renter
     public function destroy($booking_id)
     {
-        $this->bookingService->cancelBooking($booking_id);
-        return response()->json(['message' => 'Booking Cancelled Successfully.']);
+        try{
+            $this->bookingService->cancelBooking($booking_id);
+            return response()->json(['message' => 'Booking Cancelled Successfully.']);
+        }catch (CompletedBookingException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (CanceledBookingException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
     // rate booking by the renter
     public function rate(RateBookingRequest $request, $booking_id)
     {
         $validated = $request->validated();
-        $this->bookingService->checkExtraAttributes($request, $validated);
-        $this->bookingService->rateBooking($validated, $booking_id);
-        return response()->json('Rated Successfully');
+        try {
+            $this->bookingService->checkExtraAttributes($request, $validated);
+            $this->bookingService->rateBooking($validated, $booking_id);
+            return response()->json('Rated Successfully');
+        } catch (ExtraAttributesException $e) {
+            return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => "Booking Not Found."], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (CompletedBookingException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (CanceledBookingException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
     // get all booking by the admin
     public function getAllBookings()

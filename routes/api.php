@@ -31,12 +31,9 @@ Route::middleware('auth:sanctum')->group(function(){
         // Owner routes
         Route::middleware('isOwner')->group(function () {
 
-<<<<<<< HEAD   
-});
 
  Route::apiResource('apartment',ApartmentController::class)->middleware('auth:sanctum');
  Route::get('apartments/filter', [ApartmentController::class, 'filter'])->middleware('auth:sanctum');
-=======
             Route::get('/bookings/{apartment_id}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
             Route::put('/bookings/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
             Route::put('/bookings/{booking_id}/reject', [BookingController::class, 'rejectBooking']);
@@ -45,4 +42,3 @@ Route::middleware('auth:sanctum')->group(function(){
     
     Route::apiResource('apartment',ApartmentController::class);
 });
->>>>>>> 2dc34de0b69ebef19a739eb7451395fc3f6b190b

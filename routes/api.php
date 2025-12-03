@@ -14,35 +14,24 @@ Route::middleware('auth:sanctum')->group(function(){
 
     // Admin-only route
     Route::get('users', [UserController::class, 'getAllUsers'])->middleware('isAdmin');
-    
+
     // Bookings routes=============//
-        
+
         // Renter routes
         Route::middleware('isRenter')->group(function () {
             Route::apiResource('/bookings', BookingController::class);
             Route::put('/bookings/{booking}/rate', [BookingController::class, 'rate']);
         });
-        
+
         // Admin routes
         Route::middleware('isAdmin')->group(function () {
             Route::get('/bookings/all', [BookingController::class, 'getAllBookings']);
         });
-        
+
         // Owner routes
         Route::middleware('isOwner')->group(function () {
 
-<<<<<<< HEAD   
 });
 
  Route::apiResource('apartment',ApartmentController::class)->middleware('auth:sanctum');
  Route::get('apartments/filter', [ApartmentController::class, 'filter'])->middleware('auth:sanctum');
-=======
-            Route::get('/bookings/{apartment_id}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
-            Route::put('/bookings/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
-            Route::put('/bookings/{booking_id}/reject', [BookingController::class, 'rejectBooking']);
-        });
-    // ===========================================// 
-    
-    Route::apiResource('apartment',ApartmentController::class);
-});
->>>>>>> 2dc34de0b69ebef19a739eb7451395fc3f6b190b

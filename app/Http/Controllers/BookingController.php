@@ -8,6 +8,7 @@ use App\Exceptions\DateConflictException;
 use App\Exceptions\ExtraAttributesException;
 use App\Http\Requests\RateBookingRequest;
 use App\Models\Booking;
+//use App\Http\Requests\RateBookingRequest;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
@@ -23,7 +24,6 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class BookingController extends Controller
 {
-
     protected $bookingService;
     protected $apartmentService;
 
@@ -33,10 +33,10 @@ class BookingController extends Controller
         $this->apartmentService = $apartmentService;
     }
 
-    // get all renter bookings
     public function index()
     {
         $user = Auth::user();
+
         return BookingResource::collection($user->bookings);
     }
 

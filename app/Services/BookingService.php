@@ -22,6 +22,7 @@ class BookingService
     protected $apartmentService;
 
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public function __construct(ApartmentService $apartmentService)

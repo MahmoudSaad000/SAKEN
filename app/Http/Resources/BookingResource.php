@@ -30,7 +30,7 @@ class BookingResource extends JsonResource
             'total_price' => null,
             'createdAt' => $this->created_at->setTimezone('Asia/Damascus')->toDateTimeString(),
             'renter' => null,
-            'appartment' => null
+            'appartment' => null,
         ];
     }
 }

@@ -14,10 +14,6 @@ class BookingResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $renter = [
-            'id'   => optional($this->renter)->id,
-            'Name' => optional($this->renter)->firstname . ' ' . optional($this->renter)->lastname,
-        ];
         $duration_in_days = $this->check_in_date->diffInDays($this->check_out_date);
         $tatal_price = $duration_in_days * $this->apartment->rental_price;
 
@@ -31,9 +27,13 @@ class BookingResource extends JsonResource
             'duration_in_days' => $duration_in_days,
             'total_price' => $tatal_price,
             'booking_date' => $this->created_at->setTimezone('Asia/Damascus')->toDateTimeString(),
-            'appartment_id' => $this->apartment_id,
-            // 'renter_id' => $this->when($renter['id'] !== null , $renter),
-            'renter_id' => $this->renter_id,
+            'apartment_id' => $this->apartment_id,
+            'renter' => $this->whenLoaded('renter', function () {
+                return [
+                    'id'   => $this->renter->id,
+                    'name' => $this->renter->firstname . ' ' . $this->renter->lastname,
+                ];
+            }),
         ];
     }
 }

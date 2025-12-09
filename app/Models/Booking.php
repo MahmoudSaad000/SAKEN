@@ -17,7 +17,7 @@ class Booking extends Model
         'check_in_date',
         'check_out_date',
         'apartment_id',
-        'user_id'
+        'user_id',
     ];
 
     protected $table = 'bookings';
@@ -26,7 +26,6 @@ class Booking extends Model
         'check_in_date' => 'datetime',
         'check_out_date' => 'datetime',
     ];
-
 
     public function renter()
     {

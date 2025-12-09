@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -32,7 +31,7 @@ class UserFactory extends Factory
             'picture' => fake()->imageUrl(),
             'id_card_image' => fake()->imageUrl(),
             'is_approved' => false,
-            'role' => fake()->randomElement(['admin', 'apartment_owner', 'renter'])
+            'role' => fake()->randomElement(['admin', 'apartment_owner', 'renter']),
         ];
     }
 

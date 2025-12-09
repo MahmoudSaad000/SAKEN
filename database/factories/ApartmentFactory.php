@@ -31,7 +31,7 @@ class ApartmentFactory extends Factory
             'average_rate' => $this->faker->randomFloat(2, 1, 5),
             'offer_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'city_id' => City::inRandomOrder()->first()->id,
-            'user_id' => User::inRandomOrder()->first()->id
+            'user_id' => User::inRandomOrder()->first()->id,
         ];
     }
 }

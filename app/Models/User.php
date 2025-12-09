@@ -19,8 +19,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $guarded = [
-        'id'
-       // 'is_approved'
+        'id',
+        // 'is_approved'
     ];
 
     /**
@@ -49,11 +49,8 @@ class User extends Authenticatable
     public function bookings()
     {
 
-        
-
         return $this->hasMany(Booking::class);
 
-       
     }
 
     public function apartments()

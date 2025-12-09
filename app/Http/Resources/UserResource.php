@@ -24,7 +24,7 @@ class UserResource extends JsonResource
                 'picture' => $this->picture,
                 'id_card_image' => $this->id_card_image,
                 'is_approved' => $this->is_approved,
-                'role' => $this->role
+                'role' => $this->role,
             ];
     }
 }

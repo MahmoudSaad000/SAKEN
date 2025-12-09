@@ -6,16 +6,9 @@ use App\Exceptions\CanceledBookingException;
 use App\Exceptions\CompletedBookingException;
 use App\Exceptions\DateConflictException;
 use App\Exceptions\ExtraAttributesException;
-use App\Http\Resources\BookingResource;
-use App\Models\Apartment;
 use App\Models\Booking;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\Events\Validated;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class BookingService
 {
@@ -45,7 +38,7 @@ class BookingService
             )->exists();
 
             if ($conflict) {
-                throw new DateConflictException();
+                throw new DateConflictException;
             }
         }
 
@@ -57,12 +50,12 @@ class BookingService
         return $booking;
     }
 
-
     public function getExtraAttributes($request, $validated_data)
     {
         if (is_null($request)) {
             return collect([]);
         }
+
         return collect(array_keys($request->all()))->diff(array_keys($validated_data));
     }
 
@@ -73,6 +66,7 @@ class BookingService
         $this->checkBookingStatus($booking);
         $booking->booking_status = self::STATUS_CANCELLED;
         $booking->save();
+
         return $booking;
     }
 
@@ -87,24 +81,25 @@ class BookingService
 
         $booking->rate = $Validated['rate'];
         $booking->save();
+
         return $booking;
     }
 
     public function checkBookingStatus($booking)
     {
         if ($booking->booking_status === self::STATUS_COMPLETED) {
-            throw new CompletedBookingException();
-        } else if ($booking->booking_status === self::STATUS_CANCELLED) {
-            throw new CanceledBookingException();
+            throw new CompletedBookingException;
+        } elseif ($booking->booking_status === self::STATUS_CANCELLED) {
+            throw new CanceledBookingException;
         }
     }
 
     public function checkUserAuthrization($booking)
     {
-        if (Auth::user()->id !== $booking->user_id)
-            throw new AuthorizationException();
+        if (Auth::user()->id !== $booking->user_id) {
+            throw new AuthorizationException;
+        }
     }
-
 
     public function checkExtraAttributes($request, $validated_request)
     {
@@ -126,7 +121,7 @@ class BookingService
         )->exists();
 
         if ($conflict) {
-            throw new DateConflictException();
+            throw new DateConflictException;
         }
 
         return Booking::create($validated_request);

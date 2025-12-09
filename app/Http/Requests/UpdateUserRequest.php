@@ -25,7 +25,6 @@ class UpdateUserRequest extends FormRequest
         return [
             'firstname' => 'sometimes|string|max:255',
             'lastname' => 'sometimes|string|max:255',
-            // 'phone_number' => 'sometimes|digits:10|unique:users,Phone_Number',
             'password' => 'sometimes|string|min:8|confirmed',
             'date_of_birth' => [
                 'sometimes',
@@ -42,9 +41,35 @@ class UpdateUserRequest extends FormRequest
                     }
                 },
             ],
-            'picture' => 'sometimes|image|mimes:png,jpg,jpeg,gif|max:2048',
-            'id_card_image' => 'sometimes|image|mimes:png,jpg,jpeg,gif|max:2048',
+            'picture' => 'sometimes|image|mimes:png,jpg,jpeg,gif',
+            'id_card_image' => 'sometimes|image|mimes:png,jpg,jpeg,gif',
             'role' => 'sometimes|apartment_owner,renter',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+
+            'firstname.string' => 'The first name must be a string.',
+            'firstname.max' => 'The first name must not exceed 255 characters.',
+
+            'lastname.string' => 'The last name must be a string.',
+            'lastname.max' => 'The last name must not exceed 255 characters.',
+
+            'password.string' => 'The password must be a string.',
+            'password.min' => 'The password must be at least 8 characters.',
+            'password.confirmed' => 'The password confirmation does not match.',
+
+            'date_of_birth.date' => 'The date of birth must be a valid date.',
+
+            'picture.image' => 'The profile picture must be an image.',
+            'picture.mimes' => 'The profile picture must be of type: png, jpg, jpeg, gif.',
+
+            'id_card_image.image' => 'The ID card image must be an image.',
+            'id_card_image.mimes' => 'The ID card image must be of type: png, jpg, jpeg, gif.',
+
+            'role.in' => 'The role must be either apartment_owner or renter.',
         ];
     }
 }

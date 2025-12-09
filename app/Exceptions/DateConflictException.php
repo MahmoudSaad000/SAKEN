@@ -6,8 +6,8 @@ use Exception;
 
 class DateConflictException extends Exception
 {
-    public function __construct($message = "The selected date conflicts with an existing booking.",$code = 422)
+    public function __construct($message = 'The selected date conflicts with an existing booking.', $code = 422)
     {
-        parent::__construct($message,$code);
+        parent::__construct($message, $code);
     }
 }

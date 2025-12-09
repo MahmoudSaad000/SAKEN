@@ -22,13 +22,13 @@ class FilterReq extends FormRequest
     public function rules(): array
     {
         return [
-     'governorate_id' => 'nullable|exists:governorates,id',
-    'city_id' => 'nullable|exists:cities,id',
-    'min_price' => 'nullable|numeric',
-    'max_price' => 'nullable|numeric',
-    'min_area' => 'nullable|numeric',
-    'max_area' => 'nullable|numeric',
-    'rooms' => 'nullable|integer',
+            'governorate_id' => 'nullable|exists:governorates,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'min_price' => 'nullable|numeric',
+            'max_price' => 'nullable|numeric',
+            'min_area' => 'nullable|numeric',
+            'max_area' => 'nullable|numeric',
+            'rooms' => 'nullable|integer',
         ];
     }
 }

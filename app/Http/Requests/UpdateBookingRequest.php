@@ -27,19 +27,19 @@ class UpdateBookingRequest extends FormRequest
             'check_out_date' => ['sometimes', 'date', 'after:check_in_date', 'before:2030-01-01'],
         ];
     }
+
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
             $checkIn = $this->input('check_in_date');
             $checkOut = $this->input('check_out_date');
 
-            if (($checkIn && !$checkOut) || (!$checkIn && $checkOut)) {
+            if (($checkIn && ! $checkOut) || (! $checkIn && $checkOut)) {
                 $validator->errors()->add('check_in_date', 'Both check-in and check-out dates must be provided to change the dates.');
                 $validator->errors()->add('check_out_date', 'Both check-in and check-out dates must be provided to change the dates.');
             }
         });
     }
-
 
     public function messages(): array
     {

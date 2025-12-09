@@ -3,7 +3,6 @@
 namespace App\Exceptions;
 
 use Exception;
-use Throwable;
 
 class CompletedBookingException extends Exception
 {

@@ -25,9 +25,10 @@ class StoreBookingRequest extends FormRequest
             'payment_method' => 'required|in:credit,bank_transfer,cash,digital_wallet',
             'check_in_date' => 'required|date|after:today|before:2030-01-01',
             'check_out_date' => 'required|date|after:check_in_date|before:2030-01-01',
-            'apartment_id' => 'required|integer|exists:apartments,id'
+            'apartment_id' => 'required|integer|exists:apartments,id',
         ];
     }
+
     public function messages(): array
     {
         return [

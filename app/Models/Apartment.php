@@ -31,7 +31,7 @@ class Apartment extends Model
         return $this->belongsTo(User::class);
     }
 
-     public function scopeCity($query, $cityId)
+    public function scopeCity($query, $cityId)
     {
         return $query->where('city_id', $cityId);
     }
@@ -40,14 +40,14 @@ class Apartment extends Model
     public function scopePriceBetween($query, $min = null, $max = null)
     {
         return $query->when($min, fn ($q) => $q->where('price', '>=', $min))
-                     ->when($max, fn ($q) => $q->where('price', '<=', $max));
+            ->when($max, fn ($q) => $q->where('price', '<=', $max));
     }
 
     // ✅ فلترة حسب المساحة
     public function scopeAreaBetween($query, $min = null, $max = null)
     {
         return $query->when($min, fn ($q) => $q->where('area', '>=', $min))
-                     ->when($max, fn ($q) => $q->where('area', '<=', $max));
+            ->when($max, fn ($q) => $q->where('area', '<=', $max));
     }
 
     // ✅ فلترة حسب عدد الغرف
@@ -56,7 +56,7 @@ class Apartment extends Model
         return $query->when($rooms, fn ($q) => $q->where('rooms', $rooms));
     }
 
-     public function scopeGovernorate($query, $governorateId)
+    public function scopeGovernorate($query, $governorateId)
     {
         return $query->when($governorateId, function ($q) use ($governorateId) {
             $q->whereHas('city', function ($cityQuery) use ($governorateId) {

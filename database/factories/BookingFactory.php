@@ -29,9 +29,8 @@ class BookingFactory extends Factory
             'payment_failed', // something in payment went wrong
             'no_show', // client pay and haven't checked in
             'checked_in', // client arraived to appartment
-            'modified' // client modifie his request
+            'modified', // client modifie his request
         ];
-
 
         return [
             //
@@ -40,7 +39,7 @@ class BookingFactory extends Factory
             'check_in_date' => $this->faker->dateTimeBetween('now', '+3 months'),
             'check_out_date' => $this->faker->dateTimeBetween('+3 months', '+6 months'),
             'booking_status' => $this->faker->randomElement($statuses),
-            'payment_method' => $this->faker->randomElement(['credit','bank_transfer','cash','digital_wallet']),
+            'payment_method' => $this->faker->randomElement(['credit', 'bank_transfer', 'cash', 'digital_wallet']),
             'created_at' => now(),
             'updated_at' => now(),
         ];

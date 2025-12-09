@@ -19,10 +19,8 @@ class ApartmentService
     {
         //
     }
-    public function doesApartmentBelongToUser()
-    {
-        
-    }
+
+    public function doesApartmentBelongToUser() {}
 
     public function findApartment($apartment_id)
     {
@@ -41,10 +39,11 @@ class ApartmentService
             ], 404);
         }
     }
+
     public function checkUserAuthrization($apartment)
     {
-        if (Auth::user()->id !== $apartment->user_id)
-            throw new AuthorizationException();
+        if (Auth::user()->id !== $apartment->user_id) {
+            throw new AuthorizationException;
+        }
     }
-
 }

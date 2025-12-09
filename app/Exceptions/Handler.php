@@ -8,10 +8,6 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
 // CUSTOM EXCEPTIONS
-use App\Exceptions\DateConflictException;
-use App\Exceptions\ExtraAttributesException;
-use App\Exceptions\CompletedBookingException;
-use App\Exceptions\CanceledBookingException;
 
 class Handler extends ExceptionHandler
 {
@@ -47,6 +43,7 @@ class Handler extends ExceptionHandler
         while ($e->getPrevious()) {
             $e = $e->getPrevious();
         }
+
         return $e;
     }
 
@@ -64,7 +61,7 @@ class Handler extends ExceptionHandler
             // Handle custom exceptions
             if ($exception instanceof DateConflictException) {
                 return response()->json([
-                    'error'   => 'Date Conflict',
+                    'error' => 'Date Conflict',
                     'message' => $exception->getMessage(),
                 ], 422);
             }
@@ -79,7 +76,7 @@ class Handler extends ExceptionHandler
 
             if ($exception instanceof CompletedBookingException || $exception instanceof CanceledBookingException) {
                 return response()->json([
-                    'error'   => 'Invalid Booking Status',
+                    'error' => 'Invalid Booking Status',
                     'message' => $exception->getMessage(),
                 ], 422);
             }
@@ -87,21 +84,21 @@ class Handler extends ExceptionHandler
             // Standard Laravel exceptions
             if ($exception instanceof ModelNotFoundException) {
                 return response()->json([
-                    'error'   => 'Resource Not Found',
+                    'error' => 'Resource Not Found',
                     'message' => $exception->getMessage(),
                 ], 404);
             }
 
             if ($exception instanceof AuthorizationException) {
                 return response()->json([
-                    'error'   => 'Unauthorized',
+                    'error' => 'Unauthorized',
                     'message' => $exception->getMessage(),
                 ], 403);
             }
 
             // Default catch-all for API exceptions
             return response()->json([
-                'error'   => 'Server Error',
+                'error' => 'Server Error',
                 'message' => $exception->getMessage(),
             ], 422);
         }

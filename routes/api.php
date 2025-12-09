@@ -74,8 +74,18 @@ Route::middleware('auth:sanctum')->group(function () {
     | Apartment Management
     |--------------------------------------------------------------------------
     */
+     Route::apiResource('apartment', ApartmentController::class);
     Route::prefix('apartment')->group(function () {
-        Route::apiResource('', ApartmentController::class);
+       
+        Route::get('all',[ApartmentController::class,'getAllApartments']);
+        Route::get('filterGovernorate/{governorateId}', [ApartmentController::class, 'filterByGovernorate']);
+        Route::get('filterCity/{cityId}', [ApartmentController::class, 'filterByCity']);
+        Route::get('filterRooms/{numRooms}', [ApartmentController::class, 'filterByRooms']);
+        Route::get('filterPrice/{minPrice?}/{maxPrice?}', [ApartmentController::class, 'filterByPrice']);
+        Route::get('filterِArea/{minArea?}/{maxArea?}', [ApartmentController::class, 'filterByArea']);
+        Route::post('{apartmentId}/favorite', [ApartmentController::class, 'addToFavorites']);
+        Route::get('favorites', [ApartmentController::class, 'getFavorites']);
+        Route::delete('{apartmentId}/removeFavorite', [ApartmentController::class, 'removeFromFavorites']);
     });
 
 });

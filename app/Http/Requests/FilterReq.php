@@ -28,7 +28,7 @@ class FilterReq extends FormRequest
     'max_price' => 'nullable|numeric',
     'min_area' => 'nullable|numeric',
     'max_area' => 'nullable|numeric',
-    'rooms' => 'nullable|integer',
+    'rooms' => 'nullable|integer|min:0',
         ];
     }
 }

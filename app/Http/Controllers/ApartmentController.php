@@ -117,20 +117,129 @@ class ApartmentController extends Controller
         }
         $apartment->delete();
 
-        return response()->json('deleted successfully', 204);
+        return response()->json(['massage'=>'deleted successfully']);
     }
 
-     public function filter(FilterReq $request)
-{
-    $apartments = Apartment::with('city.governorate')
-        ->governorate($request->governorate_id)   
-        ->city($request->city_id)
-        ->priceBetween($request->min_price, $request->max_price)
-        ->areaBetween($request->min_area, $request->max_area)
-        ->rooms($request->rooms)
-        ->paginate(10);
 
-    return ApartmentResource::collection($apartments);
+     public function getAllApartments()
+    {
+       $apartments=Apartment::all();
+       return response()->json([
+        'message'=>'All Apartments :',
+        'date'=> ApartmentResource::collection($apartments)
+       ]);
+    } 
+
+
+public function filterByGovernorate($governorateId)
+    {
+        $apartments = Apartment::whereHas('city', function ($query) use ($governorateId) {
+            $query->where('governorate_id', $governorateId);
+        })
+        ->with(['city.governorate'])
+        ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ApartmentResource::collection($apartments),
+        ]);
+    }
+
+    public function filterByCity($cityId)
+{
+    $apartments = Apartment::where('city_id', $cityId)
+        ->with(['city.governorate'])
+        ->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => ApartmentResource::collection($apartments),
+    ]);
 }
 
+public function filterByRooms($rooms)
+{
+    $apartments = Apartment::where('rooms', $rooms)
+        ->with(['city.governorate'])
+        ->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => ApartmentResource::collection($apartments),
+    ]);
+}
+
+public function filterByPrice($minPrice = null, $maxPrice = null)
+{
+    $query = Apartment::query();
+    
+    // الفلترة حسب السعر الأدنى
+    if ($minPrice !== null) {
+        $query->where('rental_price', '>=', $minPrice);
+    }
+    
+    // الفلترة حسب السعر الأعلى
+    if ($maxPrice !== null) {
+        $query->where('rental_price', '<=', $maxPrice);
+    }
+    
+    $apartments = $query->with(['city.governorate'])->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => ApartmentResource::collection($apartments),
+    ]);
+}
+
+public function filterByArea($minArea = null, $maxArea = null)
+{
+    $query = Apartment::query();
+    
+    // الفلترة حسب المساحة الأدنى
+    if ($minArea !== null && is_numeric($minArea)) {
+        $query->where('area', '>=', (float)$minArea);
+    }
+    
+    // الفلترة حسب المساحة الأعلى
+    if ($maxArea !== null && is_numeric($maxArea)) {
+        $query->where('area', '<=', (float)$maxArea);
+    }
+    
+    $apartments = $query->with(['city.governorate'])->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => ApartmentResource::collection($apartments),
+    ]);
+}
+
+public function addToFavorites($apartmentId)
+{
+    $apartment =$this->apartmentService->findApartment($apartmentId);
+    Auth::user()->favoriteApartments()->syncWithoutDetaching($apartmentId);
+    return response()->json([
+        'message' => 'Apartment added successfully',
+        'data' => new ApartmentResource($apartment),
+         
+    ]);
+}
+
+public function getFavorites()
+{
+    $user = auth()->user();
+    $favorites = $user->favoriteApartments()->get();
+    
+    return response()->json([
+    'message' => 'Your favorites Apartments :',
+    'data'=> ApartmentResource::collection($favorites),
+]);
+}
+
+public function removeFromFavorites($apartmentId)
+{
+    $user = auth()->user();
+    $user->favoriteApartments()->detach($apartmentId);
+    
+    return response()->json(['message' => 'Removed from favorites']);
+}
 }

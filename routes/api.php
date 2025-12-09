@@ -48,14 +48,14 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('bookings')->group(function () {
-
+        
         // Renter Routes
         Route::middleware('isRenter')->group(function () {
             Route::apiResource('', BookingController::class)->parameters(['' => 'booking']);
             Route::put('{booking}/rate', [BookingController::class, 'rate']);
             Route::put('{booking}/pay', [BookingController::class, 'pay']);
         });
-
+        
         // Admin Routes
         Route::middleware('isAdmin')->group(function () {
             Route::get('all', [BookingController::class, 'getAllBookings']);
@@ -64,11 +64,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Owner Routes
         Route::middleware('isOwner')->group(function () {
             Route::get('{apartment}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
+            Route::get('unconfirmed/all', [BookingController::class, 'getAllUnconfirmedBookings']);
             Route::put('{booking}/confirm', [BookingController::class, 'confirmBooking']);
             Route::put('{booking}/reject', [BookingController::class, 'rejectBooking']);
         });
     });
-
+    
     /*
     |--------------------------------------------------------------------------
     | Apartment Management

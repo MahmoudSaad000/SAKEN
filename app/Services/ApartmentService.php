@@ -46,4 +46,12 @@ class ApartmentService
             throw new AuthorizationException;
         }
     }
+
+
+    public function getUnconfirmedModifiedBookings($apartment)
+    {
+        return $apartment->bookings()
+            ->whereIn('booking_status', ['pending', 'modified'])
+            ->get();
+    }
 }

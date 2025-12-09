@@ -14,27 +14,43 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [UserController::class, 'GetUser']);
     Route::delete('user/delete-account', [UserController::class, 'deleteMyAccount']);
 
-    Route::prefix('/users')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | User Management
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('users')->group(function () {
 
-        Route::post('/{id}', [UserController::class, 'update']);
+        // User self or admin update
+        Route::post('{id}', [UserController::class, 'update']);
 
+        // Admin-only User Routes
         Route::middleware('isAdmin')->group(function () {
+            Route::put('{id}/approve', [UserController::class, 'approveUser']);
+            Route::put('{id}/reject', [UserController::class, 'rejectUser']);
 
-            Route::put('/{id}/approve', [UserController::class, 'approveUser']);
-            Route::put('/{id}/reject', [UserController::class, 'rejectUser']);
-            Route::put('/approveAll', [UserController::class, 'approveAllUsers']);
-            Route::put('/rejectAll', [UserController::class, 'rejectAllUsers']);
-            Route::get('/isfalse', [UserController::class, 'getAllUsersis_approved_false']);
-            Route::get('/istrue', [UserController::class, 'getAllUsersis_approved_true']);
+            Route::put('approveAll', [UserController::class, 'approveAllUsers']);
+            Route::put('rejectAll', [UserController::class, 'rejectAllUsers']);
+
+            Route::get('isfalse', [UserController::class, 'getAllUsersis_approved_false']);
+            Route::get('istrue', [UserController::class, 'getAllUsersis_approved_true']);
+
+            Route::get('/', [UserController::class, 'getAllUsers']);
         });
     });
 
-    Route::prefix('/bookings')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Booking Management
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('bookings')->group(function () {
 
+        // Renter Routes
         Route::middleware('isRenter')->group(function () {
-
-            Route::apiResource('', BookingController::class);
-            Route::put('/{booking_id}/rate', [BookingController::class, 'rateBooking'])->middleware('isRenter');
+            Route::apiResource('', BookingController::class)->parameters(['' => 'booking']);
+            Route::put('{booking}/rate', [BookingController::class, 'rate']);
+            Route::put('{booking}/pay', [BookingController::class, 'pay']);
         });
 
         Route::middleware('isAdmin')->group(function () {

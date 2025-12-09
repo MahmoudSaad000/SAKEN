@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Apartment extends Model
 {
+
+
     use HasFactory;
 
     protected $guarded = [];
@@ -33,7 +35,7 @@ class Apartment extends Model
 
     public function scopeCity($query, $cityId)
     {
-        return $query->where('city_id', $cityId);
+        return $this->belongsToMany(User::class,'favorites','user_id', 'apartment_id');
     }
 
     // ✅ فلترة حسب السعر

@@ -15,18 +15,18 @@ class ApartmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'description' => $this->description,
             'area' => $this->area,
             'rooms' => $this->rooms,
             'living_rooms' => $this->living_rooms,
             'bathrooms' => $this->bathrooms,
             'rental price' => $this->rental_price,
+            'governorate' => $this->city->governorate->name,
+            'city' => $this->city->name,
             'address' => $this->address,
             'status' => $this->status,
             'average rate' => $this->average_rate,
-            'city' => $this->city->name,
-            'governorate' => $this->city->governorate->name,
-            'owner' => $this->user->firstname.' '.$this->user->lastname,
+            'owner' => $this->user->firstname . ' ' . $this->user->lastname,
+            'description' => $this->description,
             'pictures' => $this->pictures->pluck('picture'),
         ];
     }

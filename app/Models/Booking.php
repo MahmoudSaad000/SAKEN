@@ -29,7 +29,7 @@ class Booking extends Model
 
     public function renter()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function apartment()

@@ -26,6 +26,19 @@ class BookingService
     public function updateBooking($request, $validated_request, $booking_id)
     {
         $booking = Booking::findOrFail($booking_id);
+
+        if (
+            $booking->booking_status !== 'payment_pending' &&
+            $booking->booking_status !== 'pending' &&
+            $booking->booking_status !== 'modified'
+        ) {
+            throw new Exception("You can't update this booking becouse it's currntly status is $booking->booking_status.", 422);       
+        }
+
+
+        $this->checkExtraAttributes($request, $validated_request);
+        $this->checkUserAuthrization($booking);
+
         $validated_request['apartment_id'] = $booking->apartment_id;
 
         // Only check date conflict if the user provided both dates
@@ -41,9 +54,6 @@ class BookingService
                 throw new DateConflictException;
             }
         }
-
-        $this->checkExtraAttributes($request, $validated_request);
-        $this->checkUserAuthrization($booking);
 
         $booking->update($validated_request);
 

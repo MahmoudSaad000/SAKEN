@@ -38,6 +38,8 @@ class ApartmentService
                 'details' => $e->getMessage(),
             ], 404);
         }
+
+        
     }
 
     public function checkUserAuthrization($apartment)

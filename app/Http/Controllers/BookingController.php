@@ -54,7 +54,7 @@ class BookingController extends Controller
 
         try {
 
-            $booking = $this->bookingService->createBooking($request, $validated);
+            $booking = $this->bookingService->createBooking($request, $data);
 
             return new BookingResource($booking);
         } catch (ExtraAttributesException $e) {

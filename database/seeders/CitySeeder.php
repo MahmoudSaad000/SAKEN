@@ -13,22 +13,94 @@ class CitySeeder extends Seeder
     public function run(): void
     {
         $Damascus_cities = [
-            'Dhadeel', 'Jaramana', 'Al-mazza', 'Bagdad.S', 'Baramika', 'Midan',
+            "Qabr as Sitt",
+            "Duma",
+            "Jaramana",
+            "Al Hajar al Aswad",
+            "Darayya",
+            "At Tall",
+            "An Nabk",
+            "Babila",
+            "Yabrud",
+            "Harasta",
+            "Zamalka",
+            "Al Kiswah",
+            "Jayrud",
+            "Al Ghizlaniyah",
+            "Qadsayya",
+            "Ar Ruhaybah",
+            "Yalda",
+            "Al Qutayfah",
+            "Az Zabadani",
+            "Siqba",
+            "Saydnaya",
+            "Qatana",
+            "Kafr Batna",
+            "`Adra",
+            "Zakiyah",
+            "Manin",
+            "Bayt Saham",
+            "Al Mu`addamiyah",
+            "Sahnaya",
+            "Kanakir",
+            "Qarah",
+            "Hawsh al Bahdaliyah",
+            "Dayr `Atiyah",
+            "As Sabburah",
+            "`Utaybah",
+            "Ma`raba",
+            "Al Hamah",
+            "Jisrayn",
+            "Madaya",
+            "Al Buwaydah",
+            "Ra's al Ma`arrah"
         ];
+
         foreach ($Damascus_cities as $city) {
             City::create(['name' => $city, 'governorate_id' => 1]);
         }
 
         $Homs_cities = [
-            'Al-Hadara', 'Al-Ghota', 'Al-Mokhaiam', 'Al-Khalidia', 'Al-Waleed', 'Al-Shammas',
+            "Ar Rastan",
+            "Tadmur",
+            "Al Qusayr",
+            "Tallbisah",
+            "Al Qaryatayn",
+            "Tallkalakh",
+            "Kafr Laha",
+            "As Sukhnah",
+            "Shin",
+            "Tall Dhahab",
+            "Mahin"
         ];
         foreach ($Homs_cities as $city) {
             City::create(['name' => $city, 'governorate_id' => 2]);
         }
 
         $Idlib_cities = [
-            'Ariha', 'Maarrat al-Numan', 'Saraqib', 'Jisr al-Shughur',
+            "Ma`arrat an Nu`man",
+            "Khan Shaykhun",
+            "Jisr ash Shughur",
+            "Saraqib",
+            "Ma`arratmisrin",
+            "Kafr Nubl",
+            "Salqin",
+            "Harim",
+            "Binnish",
+            "Sarmada",
+            "Sarmin",
+            "Kafr Ruma",
+            "Jarjanaz",
+            "Turmanin",
+            "Barah",
+            "Armanaz",
+            "Kafr Takharim",
+            "Has",
+            "Kafr Sajnah",
+            "Hish",
+            "Taftanaz"
         ];
+
         foreach ($Idlib_cities as $city) {
             City::create(['name' => $city, 'governorate_id' => 3]);
         }

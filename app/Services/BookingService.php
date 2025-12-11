@@ -6,7 +6,9 @@ use App\Exceptions\CanceledBookingException;
 use App\Exceptions\CompletedBookingException;
 use App\Exceptions\DateConflictException;
 use App\Exceptions\ExtraAttributesException;
+use App\Models\Apartment;
 use App\Models\Booking;
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +34,7 @@ class BookingService
             $booking->booking_status !== 'pending' &&
             $booking->booking_status !== 'modified'
         ) {
-            throw new Exception("You can't update this booking becouse it's currntly status is $booking->booking_status.", 422);       
+            throw new Exception("You can't update this booking becouse it's currntly status is $booking->booking_status.", 422);
         }
 
 
@@ -134,6 +136,9 @@ class BookingService
             throw new DateConflictException;
         }
 
+        $apartment = Apartment::findOrFail($validated_request['apartment_id']);
+        $apartment->status = 'Booked';
+        $apartment->save();
         return Booking::create($validated_request);
     }
 }

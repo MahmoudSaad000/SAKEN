@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
        
     });
 
-     Route::apiResource('apartment', ApartmentController::class);
+    
     Route::prefix('apartment')->group(function () {
        
         Route::get('all',[ApartmentController::class,'getAllApartments']);
@@ -97,5 +97,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('favorites', [ApartmentController::class, 'getFavorites']);
         Route::delete('{apartmentId}/removeFavorite', [ApartmentController::class, 'removeFromFavorites']);
     });
-
+ Route::apiResource('apartment', ApartmentController::class)->middleware('isOwner');  
 });

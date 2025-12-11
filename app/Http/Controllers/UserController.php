@@ -40,9 +40,9 @@ class UserController extends Controller
 
         $user = User::create($userData);
 
-        $locale = $request->header('lang', 'ar');
+        // $locale = $request->header('lang', 'ar');
 
-        $user->notify(new OTPNotification('phoneVerify', $locale));
+        // $user->notify(new OTPNotification('phoneVerify', $locale));
 
         return response()->json([
             'message' => 'User Registered Successfully.',

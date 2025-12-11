@@ -110,33 +110,40 @@ class ApartmentController extends Controller
         if ($apartment->user_id != $userId) {
             return response()->json('Unauthenticated.', 403);
         }
-        $apartment->delete();
+       // $apartment->delete();
 
-        return response()->json(['massage' => 'deleted successfully']);
+       // return response()->json(['massage' => 'deleted successfully']);
+         $allowedStatuses = ['rejected', 'cancelled', 'completed', 'expired'];
+
+    $hasNotAllowed = $apartment->bookings()
+        ->whereNotIn('booking_status', $allowedStatuses)
+        ->exists();
+
+    if ($hasNotAllowed) {
+        return back()->with('error', 'لا يمكن حذف الشقة لأنها تحتوي على حجوزات غير مسموح بحذفها.');
+    }
+
+    // حذف الحجوزات المسموح بها
+    $apartment->bookings()->whereIn('booking_status', $allowedStatuses)->delete();
+
+    // حذف الشقة
+    $apartment->delete();
+
+    return back()->with('success', 'تم حذف الشقة والحجوزات المسموح بها.');
     }
 
 
-    public function filter(FilterReq $request)
-    {
-        $apartments = Apartment::with('city.governorate')
-            ->governorate($request->governorate_id)
-            ->city($request->city_id)
-            ->priceBetween($request->min_price, $request->max_price)
-            ->areaBetween($request->min_area, $request->max_area)
-            ->rooms($request->rooms)
-            ->paginate(10);
-
-        return ApartmentResource::collection($apartments);
-    }
+   
 
 
     public function getAllApartments()
     {
         $apartments = Apartment::all();
-        return response()->json([
-            'message' => 'All Apartments :',
-            'date' => ApartmentResource::collection($apartments)
+       return response()->json([
+            'success' => true,
+            'data' => ApartmentResource::collection($apartments),
         ]);
+
     }
 
 
@@ -225,7 +232,7 @@ class ApartmentController extends Controller
     public function addToFavorites($apartmentId)
     {
         $apartment = $this->apartmentService->findApartment($apartmentId);
-        Auth::user()->favoriteApartments()->syncWithoutDetaching($apartmentId);
+        Auth::user()->favoriteApartments()->syncWithoutDetaching([$apartmentId]);
         return response()->json([
             'message' => 'Apartment added successfully',
             'data' => new ApartmentResource($apartment),
@@ -238,10 +245,10 @@ class ApartmentController extends Controller
         $user = auth()->user();
         $favorites = $user->favoriteApartments()->get();
 
-        return response()->json([
-            'message' => 'Your favorites Apartments :',
-            'data' => ApartmentResource::collection($favorites),
-        ]);
+        return [
+    'success' => true,
+    'data' => ApartmentResource::collection($favorites),
+];
     }
 
     public function removeFromFavorites($apartmentId)

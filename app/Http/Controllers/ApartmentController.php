@@ -11,6 +11,7 @@ use App\Models\Picture;
 use App\Services\ApartmentService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ApartmentController extends Controller
 {
@@ -27,7 +28,13 @@ class ApartmentController extends Controller
     public function index()
     {
         $apartments = Auth::user()->apartments;
-
+        if (count($apartments) === 0) {
+                return [
+                    'success' => true,
+                    'message' => 'you dont have apartments',
+                    'data' => []
+                ];
+            }
         return ApartmentResource::collection($apartments);
     }
 
@@ -79,9 +86,11 @@ class ApartmentController extends Controller
      */
     public function show(string $id)
     {
-
+       
         $apartment = $this->apartmentService->findApartment($id);
-
+         if ($apartment instanceof \Illuminate\Http\JsonResponse) {
+        return $apartment;
+      }
         return new ApartmentResource($apartment);
     }
 
@@ -105,35 +114,35 @@ class ApartmentController extends Controller
      */
     public function destroy(string $id)
     {
+
         $apartment = $this->apartmentService->findApartment($id);
         $userId = Auth::user()->id;
         if ($apartment->user_id != $userId) {
             return response()->json('Unauthenticated.', 403);
         }
-       // $apartment->delete();
+       
+       $allowedStatuses = ['rejected', 'cancelled', 'completed', 'expired'];
 
-       // return response()->json(['massage' => 'deleted successfully']);
-         $allowedStatuses = ['rejected', 'cancelled', 'completed', 'expired'];
-
-    $hasNotAllowed = $apartment->bookings()
+        $hasNotAllowed = $apartment->bookings()
         ->whereNotIn('booking_status', $allowedStatuses)
         ->exists();
 
-    if ($hasNotAllowed) {
-        return back()->with('error', 'لا يمكن حذف الشقة لأنها تحتوي على حجوزات غير مسموح بحذفها.');
+       if ($hasNotAllowed) {
+        return response()->json([
+            'message' => 'Can not delete this apartment because it is booked now,wait until the booking ends'
+        ], 400);
+       }
+
+    
+       $apartment->bookings()->whereIn('booking_status', $allowedStatuses)->delete();
+
+    
+       $apartment->delete();
+
+       return response()->json([
+        'message' => 'the apartment is deleted successfully with its data'
+       ], 200);
     }
-
-    // حذف الحجوزات المسموح بها
-    $apartment->bookings()->whereIn('booking_status', $allowedStatuses)->delete();
-
-    // حذف الشقة
-    $apartment->delete();
-
-    return back()->with('success', 'تم حذف الشقة والحجوزات المسموح بها.');
-    }
-
-
-   
 
 
     public function getAllApartments()
@@ -244,11 +253,17 @@ class ApartmentController extends Controller
     {
         $user = auth()->user();
         $favorites = $user->favoriteApartments()->get();
-
+        if (count($favorites) === 0) {
+                return [
+                    'success' => true,
+                    'message' => 'you dont have favorites apartments',
+                    'data' => []
+                ];
+            }
         return [
-    'success' => true,
-    'data' => ApartmentResource::collection($favorites),
-];
+     'success' => true,
+     'data' => ApartmentResource::collection($favorites),
+       ];
     }
 
     public function removeFromFavorites($apartmentId)
@@ -258,4 +273,6 @@ class ApartmentController extends Controller
 
         return response()->json(['message' => 'Removed from favorites']);
     }
+
+   
 }

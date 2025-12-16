@@ -93,6 +93,11 @@ class BookingService
 
         $booking->rate = $Validated['rate'];
         $booking->save();
+        
+        $apartment_id=$booking->apartment_id;
+        $averageRate=app(ApartmentService::class)->getApartmentRating($apartment_id);
+        $apartment = Apartment::findOrFail($apartment_id);
+        $apartment->update(['average_rate' => $averageRate]);
 
         return $booking;
     }

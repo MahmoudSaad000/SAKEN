@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use App\Services\ApartmentService;
 class ApartmentResource extends JsonResource
 {
     /**
@@ -26,10 +26,13 @@ class ApartmentResource extends JsonResource
         'city'            => $this->city?->name,
         'address'         => $this->address,
         'status'          => $this->status,
-        'average_rate'    => $this->average_rate,
+        'average_rate'    => app(ApartmentService::class)->getApartmentRating($this->id),
         'owner'           => $this->user?->firstname . ' ' . $this->user?->lastname,
+        'owner’s phone number '=>$this->user?->phone_number,
         'description'     => $this->description,
-        'pictures'        => $this->pictures?->pluck('picture'),
+        //'pictures'        => $this->pictures?->pluck('picture'),
+        'pictures' => $this->pictures?->pluck('url'),
+
     ];
 }
 

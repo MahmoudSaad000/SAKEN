@@ -16,13 +16,14 @@ return new class extends Migration
             $table->string('firstname');
             $table->string('lastname');
             $table->string('phone_number')->unique();
+            $table->timestamp('phone_verified_at')->nullable();
             $table->string('password');
             $table->date('date_of_birth');
             $table->string('picture');
             $table->string('id_card_image');
             $table->boolean('is_approved')->default('0');
             $table->enum('role', ['admin', 'apartment_owner', 'renter']);
-            $table->rememberToken();
+            $table->integer('otp_attempts')->default('0');;
             $table->timestamps();
         });
 

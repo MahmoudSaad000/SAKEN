@@ -5,6 +5,11 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/verify-otp', [UserController::class, 'verifyOtp']);
+Route::post('/resend-otp', [UserController::class, 'resendOtp']);
+Route::post('/forgot-Password', [UserController::class, 'forgotPassword']);
+Route::post('/reset-Password', [UserController::class, 'resetPassword']);
+
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
 
@@ -80,14 +85,12 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::put('{booking}/reject', [BookingController::class, 'rejectBooking']);
             });
         });
-
-       
     });
 
-     Route::apiResource('apartment', ApartmentController::class);
+    Route::apiResource('apartment', ApartmentController::class);
     Route::prefix('apartment')->group(function () {
-       
-        Route::get('all',[ApartmentController::class,'getAllApartments']);
+
+        Route::get('all', [ApartmentController::class, 'getAllApartments']);
         Route::get('filterGovernorate/{governorateId}', [ApartmentController::class, 'filterByGovernorate']);
         Route::get('filterCity/{cityId}', [ApartmentController::class, 'filterByCity']);
         Route::get('filterRooms/{numRooms}', [ApartmentController::class, 'filterByRooms']);
@@ -97,5 +100,4 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('favorites', [ApartmentController::class, 'getFavorites']);
         Route::delete('{apartmentId}/removeFavorite', [ApartmentController::class, 'removeFromFavorites']);
     });
-
 });

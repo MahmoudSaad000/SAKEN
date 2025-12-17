@@ -12,6 +12,7 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Http\Resources\ReceiptResource;
+use App\Jobs\CompleteBooking;
 use App\Models\Apartment;
 use App\Models\Booking;
 use App\Services\ApartmentService;
@@ -54,11 +55,11 @@ class BookingController extends Controller
 
         try {
 
-            $booking = $this->bookingService->createBooking($request, $validated);
-
+            $booking = $this->bookingService->createBooking($request, $data);
+            CompleteBooking::dispatch($booking)->delay($booking->check_out_date);
             return new BookingResource($booking);
         } catch (ExtraAttributesException $e) {
-            return response()->json(['error' => $e->getMessage().$e->getAttributes()], $e->getCode());
+            return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => $e->getMessage()], 404);
 
@@ -112,7 +113,7 @@ class BookingController extends Controller
             $booking->load('apartment');
             return new BookingResource($booking);
         } catch (ExtraAttributesException $e) {
-            return response()->json(['error' => $e->getMessage().$e->getAttributes()], $e->getCode());
+            return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => "Booking Not Found."], 404);
         } catch (DateConflictException $e) {
@@ -161,7 +162,7 @@ class BookingController extends Controller
             return response()->json('Rated Successfully');
             return response()->json('Rating submitted successfully');
         } catch (ExtraAttributesException $e) {
-            return response()->json(['error' => $e->getMessage().$e->getAttributes()], $e->getCode());
+            return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Booking Not Found.'], 404);
         } catch (AuthorizationException $e) {
@@ -300,6 +301,5 @@ class BookingController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
-
     }
 }

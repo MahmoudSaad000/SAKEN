@@ -14,6 +14,7 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         DB::table('users')->insert([
+            'id' => 1,
             'firstname'     => 'Super',
             'lastname'      => 'Admin',
             'phone_number'  => '0932483667', // adjust to your format

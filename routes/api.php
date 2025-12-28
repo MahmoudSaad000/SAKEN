@@ -87,13 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-<<<<<<< HEAD
-    Route::apiResource('apartment', ApartmentController::class);
-=======
     
->>>>>>> bbe3800b38814d964164db09f736484ce29aa5c5
     Route::prefix('apartment')->group(function () {
-
+        Route::get('{apartmentId}/getLastBookingCheckoutDate', [ApartmentController::class , 'getLastBookingCheckoutDate']);
         Route::get('all', [ApartmentController::class, 'getAllApartments']);
         Route::get('filterGovernorate/{governorateId}', [ApartmentController::class, 'filterByGovernorate']);
         Route::get('filterCity/{cityId}', [ApartmentController::class, 'filterByCity']);
@@ -104,8 +100,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('favorites', [ApartmentController::class, 'getFavorites']);
         Route::delete('{apartmentId}/removeFavorite', [ApartmentController::class, 'removeFromFavorites']);
     });
-<<<<<<< HEAD
-=======
  Route::apiResource('apartment', ApartmentController::class)->middleware('isOwner');  
->>>>>>> bbe3800b38814d964164db09f736484ce29aa5c5
 });

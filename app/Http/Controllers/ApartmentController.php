@@ -291,4 +291,16 @@ class ApartmentController extends Controller
 
      return response()->json(['status' => 'ok']);
    }
+    public function getLastBookingCheckoutDate($apartmentId){
+        $apartment = Apartment::find($apartmentId);
+        if(!$apartment){
+            return response()->json(['message' => "Apartment Not Found."],404);
+        }
+        
+        $lastDate = $apartment->bookings()
+        ->max('checkout_date');
+
+        return response()->json(['last_checkout_date' => $lastDate]);
+    }
+   
 }

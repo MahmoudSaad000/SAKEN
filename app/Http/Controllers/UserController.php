@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Notifications\OTPNotification;
+use Ichtrojan\Otp\Otp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -71,23 +72,43 @@ class UserController extends Controller
             );
         }
 
-        if ($user = User::where('phone_number', $request->phone_number)->where('is_approved', '1')->first()) {
-            $token = $user->createToken('auth_Token')->plainTextToken;
 
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if (! $user) {
             return response()->json([
-                'message' => 'Login Successfuly. ',
-                'data' => [
-                    'user' => $user,
-                ],
-                'Token' => $token,
-                'status_code' => 201
-            ], 201);
-        } else {
+                'message' => 'User not found.',
+                'status_code' => 404
+            ], 404);
+        }
+
+
+        if (is_null($user->phone_verified_at)) {
             return response()->json([
-                'message' => 'Account not approved. ',
+                'message' => 'Phone number is not verified.',
+                'need_verification' => true,
                 'status_code' => 403
             ], 403);
         }
+
+
+        if ($user->is_approved != 1) {
+            return response()->json([
+                'message' => 'Account not approved.',
+                'status_code' => 403
+            ], 403);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login successfully.',
+            'data' => [
+                'user' => $user,
+            ],
+            'Token' => $token,
+            'status_code' => 200
+        ], 200);
     }
 
     public function logout(Request $request)
@@ -314,6 +335,152 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Your account has been deleted successfully.',
+            'status_code' => 200
+        ], 200);
+    }
+
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|exists:users,phone_number',
+            'otp' => 'required'
+        ]);
+
+        $otpService = new Otp;
+
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'User not found.',
+                'status_code' => 404
+            ], 404);
+        }
+
+
+        $verification = $otpService->validate($request->phone_number, $request->otp);
+
+
+        if (! $verification->status) {
+
+
+            $user->otp_attempts += 1;
+            $user->save();
+
+
+            if ($user->otp_attempts >= 5) {
+
+                $user->delete();
+
+                return response()->json([
+                    'message' => 'Too many invalid OTP attempts. Account has been deleted.',
+                    'status_code' => 410
+                ], 410);
+            }
+
+            return response()->json([
+                'message' => 'OTP is invalid or expired.',
+                'remaining_attempts' => 5 - $user->otp_attempts,
+                'status_code' => 422
+            ], 422);
+        }
+
+        $user->otp_attempts = 0;
+        $user->phone_verified_at = now();
+        $user->save();
+
+        return response()->json([
+            'message' => 'Phone number verified successfully.',
+            'status_code' => 200
+        ], 200);
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|exists:users,phone_number'
+        ]);
+
+
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'User not found.',
+                'status_code' => 404
+            ], 404);
+        }
+
+
+        $locale = $request->header('lang', 'ar');
+
+
+        $user->notify(new OTPNotification('phoneVerify', $locale));
+
+        return response()->json([
+            'message' => 'OTP resent successfully.',
+            'status_code' => 200
+        ], 200);
+    }
+
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|exists:users,phone_number'
+        ]);
+
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'User not found.',
+                'status_code' => 404
+            ], 404);
+        }
+
+        $locale = $request->header('lang', 'ar');
+
+        $user->notify(new OTPNotification('passwordReset', $locale));
+
+        return response()->json([
+            'message' => 'OTP sent for password reset.',
+            'status_code' => 200
+        ], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|exists:users,phone_number',
+            'password' => 'required|min:8|confirmed'
+        ]);
+
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'User not found.',
+                'status_code' => 404
+            ], 404);
+        }
+
+
+        if (is_null($user->phone_verified_at)) {
+            return response()->json([
+                'message' => 'OTP verification required.',
+                'status_code' => 403
+            ], 403);
+        }
+
+
+        $user->password = Hash::make($request->password);
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password reset successfully.',
             'status_code' => 200
         ], 200);
     }

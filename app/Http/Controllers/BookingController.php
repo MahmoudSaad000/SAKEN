@@ -110,9 +110,7 @@ class BookingController extends Controller
         $validated_data['booking_status'] = 'modified';
         try {
             $booking = $this->bookingService->updateBooking($request, $validated_data, $booking_id);
-
-
-
+            CompleteBooking::dispatch($booking)->delay($booking->check_out_date);
             $booking->load('apartment');
 
             $apartmentOwner = $booking->apartment->user;

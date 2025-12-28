@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\FilterReq;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreApartmentReq;
 use App\Http\Requests\UpdateApartmentReq;
 use App\Http\Resources\ApartmentResource;
@@ -274,5 +274,21 @@ class ApartmentController extends Controller
         return response()->json(['message' => 'Removed from favorites']);
     }
 
-   
+   public function getAllNotification(Request $request) {
+    return $request->user()->notifications;
+   }
+
+   public function getUnReaNotification(Request $request) {
+    return $request->user()->unreadNotifications;
+   }
+
+   public function markAsRead($id) {
+    auth()->user()
+        ->notifications()
+        ->where('id', $id)
+        ->first()
+        ->markAsRead();
+
+     return response()->json(['status' => 'ok']);
+   }
 }

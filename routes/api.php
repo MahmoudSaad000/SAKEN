@@ -97,5 +97,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('favorites', [ApartmentController::class, 'getFavorites']);
         Route::delete('{apartmentId}/removeFavorite', [ApartmentController::class, 'removeFromFavorites']);
     });
- Route::apiResource('apartment', ApartmentController::class)->middleware('isOwner');  
+
+    Route::apiResource('apartment', ApartmentController::class)->middleware('isOwner'); 
+
+    Route::prefix('notifications')->group(function () {
+    Route::get('/all',[ApartmentController::class, 'getAllNotification'] );
+    Route::post('/{id}/read', [ApartmentController::class, 'markAsRead']);
+    Route::get('/unread',[ApartmentController::class, 'getUnReaNotification'] );
+    });
+
+
 });

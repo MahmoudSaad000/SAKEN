@@ -17,7 +17,8 @@ class AdminSeeder extends Seeder
             'id' => 1,
             'firstname'     => 'Super',
             'lastname'      => 'Admin',
-            'phone_number'  => '0932483667', // adjust to your format
+            'phone_number'  => '0932483667',// adjust to your format
+            'phone_verified_at'=> now(),
             'password'      => Hash::make('adminadmin'), // secure hash
             'date_of_birth' => '1990-01-01',
             'picture'       => 'default.png',

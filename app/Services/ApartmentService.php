@@ -69,11 +69,10 @@ class ApartmentService
         
        
         if ($apartment->bookings->isEmpty()) {
-            return response()->json([
-                'message' => 'There is no rates yet',
-                'average_rating' => 0,
-            ], 200);
+            
+             return 0;
         }
+       
         
        
         $totalRatings = $apartment->bookings->count();

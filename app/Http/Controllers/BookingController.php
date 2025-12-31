@@ -22,6 +22,8 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\confirmNotification;
+use Illuminate\Support\Facades\Notification;
 
 class BookingController extends Controller
 {
@@ -59,6 +61,7 @@ class BookingController extends Controller
         try {
             $booking = $this->bookingService->createBooking($request, $data);
             CompleteBooking::dispatch($booking)->delay($booking->check_out_date);
+<<<<<<< HEAD
             return response()->json(
                 [
                     'message' => "Booking Created Successfully",
@@ -69,6 +72,18 @@ class BookingController extends Controller
             );
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => $e->getMessage(), 'status_code' => 404], 404);
+=======
+
+            $apartmentOwner = $booking->apartment->user;
+            Notification::send($apartmentOwner , new confirmNotification( 'new booking request for your apartment') );
+
+            $booking->load('apartment');
+            return new BookingResource($booking);
+        } catch (ExtraAttributesException $e) {
+            return response()->json(['error' => $e->getMessage() . $e->getAttributes()], $e->getCode());
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+>>>>>>> 951c4d2536e193012279f2f01a786661be116cd2
         } catch (ExtraAttributesException $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -121,6 +136,7 @@ class BookingController extends Controller
             CompleteBooking::dispatch($booking)->delay($booking->check_out_date);
             $booking->load('apartment');
 
+<<<<<<< HEAD
             return response()->json(
                 [
                     'message' => "Booking Updated Successfully",
@@ -129,6 +145,12 @@ class BookingController extends Controller
                 ],
                 200
             );
+=======
+            $apartmentOwner = $booking->apartment->user;
+            Notification::send($apartmentOwner , new confirmNotification( 'the renter modified the booking') );
+
+            return new BookingResource($booking);
+>>>>>>> 951c4d2536e193012279f2f01a786661be116cd2
         } catch (ExtraAttributesException $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -154,7 +176,17 @@ class BookingController extends Controller
     {
         try {
             $this->bookingService->cancelBooking($booking_id);
+<<<<<<< HEAD
             return response()->json(['message' => 'Booking Canceled Successfully.', 'status_code' => 200]);
+=======
+
+            $booking = Booking::findOrFail($booking_id);
+            $apartmentOwner = $booking->apartment->user;
+            Notification::send($apartmentOwner , new confirmNotification( 'the renter canceled the booking') );
+
+            return response()->json(['message' => 'Booking Cancelled Successfully.']);
+            return response()->json(['message' => 'Booking Canceled Successfully.']);
+>>>>>>> 951c4d2536e193012279f2f01a786661be116cd2
         } catch (CompletedBookingException $e) {
             return response()->json(['error' => $e->getMessage(), 'status_code' => 422], 422);
         } catch (ModelNotFoundException $e) {
@@ -262,7 +294,14 @@ class BookingController extends Controller
         $booking->booking_status = 'confirmed';
         $booking->save();
 
+<<<<<<< HEAD
         return response()->json(['message' => 'Booking Confirmed Successfully', 'status_code' => 200]);
+=======
+        $user=$booking->renter;
+        Notification::send($user , new confirmNotification( 'the apartment’s owner confirmed the booking') );
+        
+        return response()->json(['message' => 'Booking Confirmed Successfully']);
+>>>>>>> 951c4d2536e193012279f2f01a786661be116cd2
 
         try {
             $booking = Booking::findOrFail($booking_id);
@@ -290,7 +329,14 @@ class BookingController extends Controller
         $booking->booking_status = 'rejected';
         $booking->save();
 
+<<<<<<< HEAD
         return response()->json(['message' => 'Booking Rejected Successfully', 'status_code' => 200]);
+=======
+        $user=$booking->renter;
+        Notification::send($user , new confirmNotification( 'the apartment’s owner reject the booking') );
+
+        return response()->json(['message' => 'Booking Rejected Successfully']);
+>>>>>>> 951c4d2536e193012279f2f01a786661be116cd2
 
         try {
             $booking = Booking::findOrFail($booking_id);

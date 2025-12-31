@@ -17,6 +17,7 @@ class ApartmentResource extends JsonResource
 
     
     return [
+        'id'              => $this->id,
         'area'            => $this->area,
         'rooms'           => $this->rooms,
         'living_rooms'    => $this->living_rooms,
@@ -31,8 +32,8 @@ class ApartmentResource extends JsonResource
         'owner’s phone number '=>$this->user?->phone_number,
         'description'     => $this->description,
         //'pictures'        => $this->pictures?->pluck('picture'),
-        'pictures' => $this->pictures?->pluck('url'),
-
+        'pictures'        => $this->pictures?->pluck('url'),
+        'bookings'        => $this->bookings//BookingResource::collection($user_bookings);
     ];
 }
 

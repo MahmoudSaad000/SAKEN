@@ -29,12 +29,12 @@ class ApartmentController extends Controller
     {
         $apartments = Auth::user()->apartments;
         if (count($apartments) === 0) {
-                return [
-                    'success' => true,
-                    'message' => 'you dont have apartments',
-                    'data' => []
-                ];
-            }
+            return [
+                'success' => true,
+                'message' => 'you dont have apartments',
+                'data' => []
+            ];
+        }
         return ApartmentResource::collection($apartments);
     }
 
@@ -86,11 +86,11 @@ class ApartmentController extends Controller
      */
     public function show(string $id)
     {
-       
+
         $apartment = $this->apartmentService->findApartment($id);
-         if ($apartment instanceof \Illuminate\Http\JsonResponse) {
-        return $apartment;
-      }
+        if ($apartment instanceof \Illuminate\Http\JsonResponse) {
+            return $apartment;
+        }
         return new ApartmentResource($apartment);
     }
 
@@ -120,39 +120,38 @@ class ApartmentController extends Controller
         if ($apartment->user_id != $userId) {
             return response()->json('Unauthenticated.', 403);
         }
-       
-       $allowedStatuses = ['rejected', 'cancelled', 'completed', 'expired'];
+
+        $allowedStatuses = ['rejected', 'cancelled', 'completed', 'expired'];
 
         $hasNotAllowed = $apartment->bookings()
-        ->whereNotIn('booking_status', $allowedStatuses)
-        ->exists();
+            ->whereNotIn('booking_status', $allowedStatuses)
+            ->exists();
 
-       if ($hasNotAllowed) {
+        if ($hasNotAllowed) {
+            return response()->json([
+                'message' => 'Can not delete this apartment because it is booked now,wait until the booking ends'
+            ], 400);
+        }
+
+
+        $apartment->bookings()->whereIn('booking_status', $allowedStatuses)->delete();
+
+
+        $apartment->delete();
+
         return response()->json([
-            'message' => 'Can not delete this apartment because it is booked now,wait until the booking ends'
-        ], 400);
-       }
-
-    
-       $apartment->bookings()->whereIn('booking_status', $allowedStatuses)->delete();
-
-    
-       $apartment->delete();
-
-       return response()->json([
-        'message' => 'the apartment is deleted successfully with its data'
-       ], 200);
+            'message' => 'the apartment is deleted successfully with its data'
+        ], 200);
     }
 
 
     public function getAllApartments()
     {
         $apartments = Apartment::all();
-       return response()->json([
+        return response()->json([
             'success' => true,
             'data' => ApartmentResource::collection($apartments),
         ]);
-
     }
 
 
@@ -254,16 +253,16 @@ class ApartmentController extends Controller
         $user = auth()->user();
         $favorites = $user->favoriteApartments()->get();
         if (count($favorites) === 0) {
-                return [
-                    'success' => true,
-                    'message' => 'you dont have favorites apartments',
-                    'data' => []
-                ];
-            }
+            return [
+                'success' => true,
+                'message' => 'you dont have favorites apartments',
+                'data' => []
+            ];
+        }
         return [
-     'success' => true,
-     'data' => ApartmentResource::collection($favorites),
-       ];
+            'success' => true,
+            'data' => ApartmentResource::collection($favorites),
+        ];
     }
 
     public function removeFromFavorites($apartmentId)
@@ -274,16 +273,27 @@ class ApartmentController extends Controller
         return response()->json(['message' => 'Removed from favorites']);
     }
 
-    public function getLastBookingCheckoutDate($apartmentId){
+    public function getCurrentBookingCheckoutDate($apartmentId)
+    {
         $apartment = Apartment::find($apartmentId);
-        if(!$apartment){
-            return response()->json(['message' => "Apartment Not Found."],404);
-        }
-        
-        $lastDate = $apartment->bookings()
-        ->max('checkout_date');
 
-        return response()->json(['last_checkout_date' => $lastDate]);
+        if (!$apartment) {
+            return response()->json(['message' => "Apartment Not Found."], 404);
+        }
+
+        $now = now();
+
+        $currentBooking = $apartment->bookings()
+            ->where('check_in_date', '<=', $now)
+            ->where('check_out_date', '>=', $now)
+            ->first();
+
+        if (!$currentBooking) {
+            return response()->json(['message' => "No active booking found."], 404);
+        }
+
+        return response()->json([
+            'current_checkout_date' => $currentBooking->check_out_date
+        ]);
     }
-   
 }

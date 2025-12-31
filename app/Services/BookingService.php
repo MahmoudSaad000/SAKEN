@@ -29,31 +29,42 @@ class BookingService
     {
         $booking = Booking::findOrFail($booking_id);
 
-        if (
-            $booking->booking_status !== 'payment_pending' &&
-            $booking->booking_status !== 'pending' &&
-            $booking->booking_status !== 'modified'
-        ) {
-            throw new Exception("You can't update this booking becouse it's currntly status is $booking->booking_status.", 422);
-        }
+        // Define allowed statuses for updates
+        $updatableStatuses = ['payment_pending', 'pending', 'modified'];
 
+        if (!in_array($booking->booking_status, $updatableStatuses)) {
+            throw new Exception("You can't update this booking because its current status is $booking->booking_status.", 422);
+        }
 
         $this->checkExtraAttributes($request, $validated_request);
         $this->checkUserAuthrization($booking);
 
-        $validated_request['apartment_id'] = $booking->apartment_id;
+        // Use existing apartment_id if not provided
+        $apartmentId = $validated_request['apartment_id'] ?? $booking->apartment_id;
+        $validated_request['apartment_id'] = $apartmentId;
 
-        // Only check date conflict if the user provided both dates
-        if (isset($validated_request['check_in_date'], $validated_request['check_out_date'])) {
+        // Only check date conflict if dates are being changed
+        $datesChanged = isset($validated_request['check_in_date']) ||
+            isset($validated_request['check_out_date']);
+
+        if ($datesChanged) {
+            $checkIn = $validated_request['check_in_date'] ?? $booking->check_in_date;
+            $checkOut = $validated_request['check_out_date'] ?? $booking->check_out_date;
+
+            // Validate that check-out is after check-in
+            if ($checkOut <= $checkIn) {
+                throw new Exception("Check-out date must be after check-in date.", 422);
+            }
+
             $conflict = Booking::conflicting(
-                $validated_request['apartment_id'],
-                $validated_request['check_in_date'],
-                $validated_request['check_out_date'],
+                $apartmentId,
+                $checkIn,
+                $checkOut,
                 $booking_id
             )->exists();
 
             if ($conflict) {
-                throw new DateConflictException;
+                throw new DateConflictException("The apartment is already booked for the selected dates.");
             }
         }
 
@@ -93,9 +104,9 @@ class BookingService
 
         $booking->rate = $Validated['rate'];
         $booking->save();
-        
-        $apartment_id=$booking->apartment_id;
-        $averageRate=app(ApartmentService::class)->getApartmentRating($apartment_id);
+
+        $apartment_id = $booking->apartment_id;
+        $averageRate = app(ApartmentService::class)->getApartmentRating($apartment_id);
         $apartment = Apartment::findOrFail($apartment_id);
         $apartment->update(['average_rate' => $averageRate]);
 

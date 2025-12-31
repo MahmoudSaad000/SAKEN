@@ -39,14 +39,11 @@ class Booking extends Model
 
     public function scopeConflicting($query, $apartmentId, $checkIn, $checkOut, $excludeBookingId = null)
     {
-        $query->where('apartment_id', $apartmentId)
+        return $query->where('apartment_id', $apartmentId)
+            // Check conflicts with bookings that could potentially occupy the apartment
+            ->whereIn('booking_status', ['checked_in', 'payment_pending', 'pending', 'modified'])
             ->where('check_in_date', '<=', $checkOut)
-            ->where('check_out_date', '>=', $checkIn);
-
-        if ($excludeBookingId) {
-            $query->where('id', '!=', $excludeBookingId);
-        }
-
-        return $query;
+            ->where('check_out_date', '>=', $checkIn)
+            ->when($excludeBookingId, fn($q) => $q->where('id', '!=', $excludeBookingId));
     }
 }

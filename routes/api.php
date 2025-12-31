@@ -60,36 +60,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::middleware('isAdmin')->group(function () {
 
-            Route::get('/all', [BookingController::class, 'getAllBookings'])->middleware('isAdmin');
+            Route::get('/all', [BookingController::class, 'getAllBookings']);
         });
 
         Route::middleware('isOwner')->group(function () {
 
-            Route::get('/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
+            Route::get('/{apartment_id}/unconfirmed', [BookingController::class , 'getUnConfirmedBookings']);
+            Route::get('/unconfirmed/all',[BookingController::class , 'getAllUnconfirmedBookings']);
             Route::put('/{booking_id}/confirm', [BookingController::class, 'confirmBooking']);
-        });
-
-        Route::prefix('/bookings')->group(function () {
-            Route::middleware('isRenter')->group(function () {
-                Route::apiResource('', BookingController::class);
-                Route::put('{booking}/rate', [BookingController::class, 'rateBooking']);
-            });
-
-            Route::middleware('isAdmin')->group(function () {
-                Route::get('all', [BookingController::class, 'getAllBookings']);
-            });
-
-            Route::middleware('isOwner')->group(function () {
-                Route::get('{apartment}/unconfirmed', [BookingController::class, 'getUnConfirmedBookings']);
-                Route::put('{booking}/confirm', [BookingController::class, 'confirmBooking']);
-                Route::put('{booking}/reject', [BookingController::class, 'rejectBooking']);
-            });
+            Route::put('{booking}/reject', [BookingController::class, 'rejectBooking']);
         });
     });
 
     
     Route::prefix('apartment')->group(function () {
-        Route::get('{apartmentId}/getLastBookingCheckoutDate', [ApartmentController::class , 'getLastBookingCheckoutDate']);
+        Route::get('{apartmentId}/getCurrentBookingCheckoutDate', [ApartmentController::class , 'getCurrentBookingCheckoutDate']);
         Route::get('all', [ApartmentController::class, 'getAllApartments']);
         Route::get('filterGovernorate/{governorateId}', [ApartmentController::class, 'filterByGovernorate']);
         Route::get('filterCity/{cityId}', [ApartmentController::class, 'filterByCity']);
@@ -100,5 +85,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('favorites', [ApartmentController::class, 'getFavorites']);
         Route::delete('{apartmentId}/removeFavorite', [ApartmentController::class, 'removeFromFavorites']);
     });
- Route::apiResource('apartment', ApartmentController::class)->middleware('isOwner');  
+    Route::apiResource('apartment', ApartmentController::class)->middleware('isOwner');  
 });

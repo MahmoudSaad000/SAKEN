@@ -28,9 +28,9 @@ class BookingResource extends JsonResource
         $totalPrice = $this->calculateTotalPrice($durationInDays);
 
         // Format dates with timezone
-        $checkInDate  = $this->check_in_date->setTimezone('Asia/Damascus')->toDateTimeString();
-        $checkOutDate = $this->check_out_date->setTimezone('Asia/Damascus')->toDateTimeString();
-        $createdAt    = $this->created_at->setTimezone('Asia/Damascus')->toDateTimeString();
+        $checkInDate  = $this->check_in_date->copy()->setTimezone('Asia/Damascus')->toDateTimeString();
+        $checkOutDate = $this->check_out_date->copy()->setTimezone('Asia/Damascus')->toDateTimeString();
+        $createdAt    = $this->created_at->copy()->setTimezone('Asia/Damascus')->toDateTimeString();
 
         // Build booking data
         return [
@@ -48,6 +48,42 @@ class BookingResource extends JsonResource
         ];
 
     }
+
+//     public function toArray(Request $request): array
+// {
+//     $checkIn  = $this->check_in_date?->copy();
+//     $checkOut = $this->check_out_date?->copy();
+//     $created  = $this->created_at?->copy();
+
+//     $durationInDays = $checkIn && $checkOut
+//         ? $checkIn->diffInDays($checkOut)
+//         : 0;
+
+//     return [
+//         'id'               => $this->id,
+//         'booking_status'   => $this->booking_status,
+//         'payment_method'   => $this->payment_method,
+
+//         'check_in_date' => $checkIn
+//             ? $checkIn->setTimezone('Asia/Damascus')->toDateTimeString()
+//             : null,
+
+//         'check_out_date' => $checkOut
+//             ? $checkOut->setTimezone('Asia/Damascus')->toDateTimeString()
+//             : null,
+
+//         'duration_in_days' => $durationInDays,
+
+//         'total_price' => $this->relationLoaded('apartment') && $this->apartment
+//             ? $durationInDays * $this->apartment->rental_price
+//             : 0,
+
+//         'createdAt' => $created
+//             ? $created->setTimezone('Asia/Damascus')->toDateTimeString()
+//             : null,
+//     ];
+// }
+
 
     /**
      * Calculate the total price for the booking

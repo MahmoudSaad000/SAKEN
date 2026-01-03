@@ -29,7 +29,6 @@ class StoreApartmentReq extends FormRequest
             'bathrooms' => 'integer|min:1|required',
             'rental_price' => 'integer|min:1|required',
             'address' => 'required|string|max:50',
-            'status' => 'required|in:Booked,Free',
             'city_id' => 'required|integer|exists:cities,id',
             'images' => 'required|array|min:1',
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',

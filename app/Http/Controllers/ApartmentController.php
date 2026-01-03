@@ -52,10 +52,10 @@ class ApartmentController extends Controller
                 'bathrooms' => $request->bathrooms,
                 'rental_price' => $request->rental_price,
                 'address' => $request->address,
-                'status' => $request->status,
+                'status' => 'Free',
                 'city_id' => $request->city_id,
                 'user_id' => Auth::id(),
-                'average_rate' => null,
+                'average_rate' => 0,
             ]);
 
             foreach ($request->file('images') as $image) {
@@ -197,12 +197,12 @@ class ApartmentController extends Controller
     {
         $query = Apartment::query();
 
-        // الفلترة حسب السعر الأدنى
+        
         if ($minPrice !== null) {
             $query->where('rental_price', '>=', $minPrice);
         }
 
-        // الفلترة حسب السعر الأعلى
+    
         if ($maxPrice !== null) {
             $query->where('rental_price', '<=', $maxPrice);
         }
@@ -219,12 +219,12 @@ class ApartmentController extends Controller
     {
         $query = Apartment::query();
 
-        // الفلترة حسب المساحة الأدنى
+        
         if ($minArea !== null && is_numeric($minArea)) {
             $query->where('area', '>=', (float)$minArea);
         }
 
-        // الفلترة حسب المساحة الأعلى
+        
         if ($maxArea !== null && is_numeric($maxArea)) {
             $query->where('area', '<=', (float)$maxArea);
         }
@@ -273,10 +273,7 @@ class ApartmentController extends Controller
         return response()->json(['message' => 'Removed from favorites']);
     }
 
-<<<<<<< HEAD
-    public function getCurrentBookingCheckoutDate($apartmentId)
-    {
-=======
+    
    public function getAllNotification(Request $request) {
     return $request->user()->notifications;
    }
@@ -295,7 +292,6 @@ class ApartmentController extends Controller
      return response()->json(['status' => 'ok']);
    }
     public function getLastBookingCheckoutDate($apartmentId){
->>>>>>> 951c4d2536e193012279f2f01a786661be116cd2
         $apartment = Apartment::find($apartmentId);
 
         if (!$apartment) {

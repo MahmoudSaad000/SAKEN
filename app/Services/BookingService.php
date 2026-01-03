@@ -36,7 +36,7 @@ class BookingService
             throw new Exception("You can't update this booking because its current status is $booking->booking_status.", 422);
         }
 
-        $this->checkExtraAttributes($request, $validated_request);
+        //$this->checkExtraAttributes($request, $validated_request);
         $this->checkUserAuthrization($booking);
 
         // Use existing apartment_id if not provided
@@ -138,7 +138,7 @@ class BookingService
         }
     }
 
-    public function createBooking($request, $validated_request)
+    public function  createBooking($request, $validated_request)
     {
         $this->checkExtraAttributes($request, $validated_request);
 

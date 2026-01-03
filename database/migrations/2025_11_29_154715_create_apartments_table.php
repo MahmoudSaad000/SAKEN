@@ -20,7 +20,7 @@ return new class extends Migration
             $table->tinyInteger('bathrooms');
             $table->integer('rental_price');
             $table->string('address');
-            $table->enum('status', ['Booked', 'Free'])->default('Free');
+            $table->enum('status', ['Booked', 'Free'])->default('Free')->nullable(false);
             $table->decimal('average_rate', 3, 2)->nullable();
             $table->date('offer_date')->nullable();
             $table->foreignId('city_id')->constrained('cities');
